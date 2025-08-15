@@ -1,0 +1,21 @@
+.padreLoading{
+  height: 100vh;
+  width: 39vw;
+  position: fixed;
+}
+
+.padreLoading.opacity{
+  background-color: gray;
+}
+
+.loadingText{
+   top: 50%;
+  left: 41%;
+  position: absolute;
+}
+
+.eliminar{
+  display: flex;
+  place-content: flex-start;
+  color: black;
+}

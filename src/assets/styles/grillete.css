@@ -1,0 +1,247 @@
+/* --- Loading, Empty, and Error States --- */
+ 
+/* This container will be centered on the screen */
+.loading-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+ 
+  /* Use flexbox to manage the children (spinner and text) */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra el spinner y el texto horizontalmente */
+  color: white;
+  opacity: 0.9;
+}
+ 
+/* The spinner itself */
+.loading {
+  width: 48px;
+  height: 48px;
+  border: 6px solid #1976d2;
+  border-top-color: #fff; /* More specific override */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  box-shadow: 0 2px 12px rgba(25, 118, 210, 0.15);
+}
+ 
+/* The text below the spinner */
+.loadingText {
+  color: black;
+  /* Añadimos un margen superior para separarlo del spinner */
+  margin-top: 24px;
+  margin-left: 57px;
+  /* Se elimina el margen izquierdo para un centrado correcto */
+  font-size: 3.1rem;
+  font-weight: bold;
+}
+ 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+ 
+.error {
+  z-index: 999;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 100%;
+  color: white;
+  opacity: 0.9;
+}
+
+/* --- Grilla Component Styles --- */
+
+/* Main container and layout */
+.grilla-container {
+  min-height: 100vh;
+  padding: 48px 32px;
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+}
+
+.grilla-content {
+  max-width: 1400px; /* Increased max-width for more cards */
+  max-width: 1600px; /* Wider for more cards */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Header section */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-title {
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+  background: linear-gradient(90deg, #ff8a00, #e52e71);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Loading and Empty States */
+
+
+/* Grid and Cards */
+.card-grid-container .MuiGrid-item {
+  display: flex; /* For equal height cards */
+}
+
+.grillaContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px; /* Espaciado entre tarjetas */
+  width: 100%;
+}
+
+
+
+
+.card-glass {
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px !important;
+  padding: 20px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+}
+
+.card-image-container {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  height: 140px; /* Reduced height */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+.card-image-content {
+  position: absolute;
+  bottom: 8px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  color: white;
+  font-weight: 700 !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.favorite-button {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  color: #fff;
+  transition: color 0.2s ease;
+}
+
+.favorite-button.favorited {
+  color: #ffd700;
+}
+
+/* Card Body */
+.card-body {
+  flex-grow: 1; /* Pushes actions to the bottom */
+  display: flex;
+  flex-direction: column;
+}
+
+.card-description {
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 8px !important;
+  flex-grow: 1; /* Takes up available space */
+}
+
+.card-location {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.card-date {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.card-tags {
+  margin-top: 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.card-tag-chip {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  backdrop-filter: blur(6px);
+}
+
+/* Card Actions */
+.card-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.details-button {
+  text-transform: none !important;
+  font-weight: 700 !important;
+  padding: 6px 18px !important;
+  border-radius: 8px !important;
+  background: linear-gradient(90deg, #ff8a00, #e52e71) !important;
+  box-shadow: 0 4px 14px rgba(229, 46, 113, 0.35) !important;
+}
+
+.details-button:hover {
+  box-shadow: 0 6px 18px rgba(229, 46, 113, 0.55) !important;
+}
+
+.edit-button {
+  text-transform: none !important;
+  font-weight: 700 !important;
+  padding: 6px 18px !important;
+  border-radius: 8px !important;
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+  color: white !important;
+}
+
+.edit-button:hover {
+  border-color: white !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}

@@ -1,0 +1,144 @@
+.detailsPaper,
+.MuiPaper-root.detailsPaper {
+  padding: 32px !important;
+  max-width: 600px !important;
+  min-width: 600px !important;
+  margin: 0 auto !important;
+  border-radius: 6px !important;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25) !important;
+  background: rgba(34, 40, 60, 0.65) !important;
+  backdrop-filter: blur(18px) saturate(160%) contrast(110%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(160%) contrast(110%) !important;
+  border: 1.5px solid rgba(255,255,255,0.18) !important;
+  color: #f5f6fa !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.detailsContainer {
+  position: absolute;
+  height: 400px !important; 
+  min-width: 500px !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
+  z-index: 200;
+}
+
+/* Contenedor fijo para imagen o loader */
+.image-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  min-width: 420px;
+  height: 300px;
+  margin: 0 auto 16px auto;
+}
+
+.details-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background-color: rgba(255,255,255,0.05);
+}
+
+/* Botones flecha centrados verticalmente */
+.arrow-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  color: white !important;
+  border-radius: 50%;
+  padding: 6px;
+  transition: background-color 0.3s;
+}
+
+.arrow-button:hover {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.arrow-button.left {
+  left: 0px;
+  top: 50%;
+}
+
+.arrow-button.right {
+  right: 0px;
+    top: 50%;
+}
+
+.contenedor {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.4s;
+}
+
+.loading {
+  width: 48px;
+  height: 48px;
+  border: 6px solid #1976d2;
+  border-top: 6px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  box-shadow: 0 2px 12px rgba(25, 118, 210, 0.15);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.details-title {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+
+.details-description {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  color: #e0e0e0;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+
+.details-location {
+  font-size: 1.2rem;
+  color: #90caf9;
+  margin-bottom: 20px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+
+.tag{
+font-size: bold;
+  color: #90caf9;
+  margin-bottom: 20px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+
+.date{
+  font-size: 1.2rem;
+  color: #90caf9;
+  margin-bottom: 20px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
