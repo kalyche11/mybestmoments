@@ -14,7 +14,7 @@ export default function Login() {
         const username = formData.get('username') as string;
         const password = formData.get('password') as string;
 
-        if(username === 'pene' && password === 'pene'){
+        if(username === 'Carlinhos' || username === 'Grays_Gostosa' && password === 'PAPAIeusomuitogostoso'){
             // Usamos un objeto para escalabilidad futura
             const sessionData = {
                 isLogged: true,
