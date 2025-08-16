@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 exports.handler = async function(event, context) {
   const { VITE_BIN_ID, VITE_MASTER_KEY } = process.env;
@@ -16,7 +16,7 @@ exports.handler = async function(event, context) {
       statusCode: 200,
       body: JSON.stringify(sortedData),
     };
-  } catch (err) {
+  } catch {
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Something went wrong" }),

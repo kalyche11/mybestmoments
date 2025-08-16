@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 exports.handler = async function(event, context) {
   if (event.httpMethod !== 'DELETE') {
@@ -38,7 +38,7 @@ exports.handler = async function(event, context) {
         };
     }
 
-  } catch (err) {
+  } catch {
       return {
           statusCode: 500,
           body: JSON.stringify({ message: "Something went wrong" })
