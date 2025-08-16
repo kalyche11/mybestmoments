@@ -1,6 +1,6 @@
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
-exports.handler = async function(event, context) {
+export const handler = async function(event, context) {
   const {  VITE_MASTER_KEY } = process.env;
   const BASE_URL = `https://api.jsonbin.io/v3/b/${VITE_MASTER_KEY}`;
 
