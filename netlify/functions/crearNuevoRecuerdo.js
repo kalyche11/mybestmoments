@@ -1,4 +1,4 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 
 export const handler = async function(event, context) {
   if (event.httpMethod !== 'POST') {
