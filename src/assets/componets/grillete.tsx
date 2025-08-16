@@ -91,7 +91,9 @@ export default function Grilla() {
 
           <Box className="header-actions">
             <Buscar recuerdos={ALL_RECUERDOS} setRecuerdos={setRecuerdos} />
-            <NewMemoryButton handleClick={() => setShowNewMemory(true)} />
+            {RECUERDOS.length > 0 && (
+              <NewMemoryButton handleClick={() => setShowNewMemory(true)} />
+            )}
           </Box>
         </Box>
 
