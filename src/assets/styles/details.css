@@ -1,8 +1,6 @@
 .detailsPaper,
 .MuiPaper-root.detailsPaper {
   padding: 32px !important;
-  max-width: 600px !important;
-  min-width: 600px !important;
   margin: 0 auto !important;
   border-radius: 6px !important;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25) !important;
@@ -17,8 +15,6 @@
 
 .detailsContainer {
   position: absolute;
-  height: 400px !important; 
-  min-width: 500px !important;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -34,8 +30,6 @@
   justify-content: center;
   position: relative;
   width: 100%;
-  max-width: 420px;
-  min-width: 420px;
   height: 300px;
   margin: 0 auto 16px auto;
 }
@@ -96,8 +90,8 @@
 .loading {
   width: 48px;
   height: 48px;
-  border: 6px solid #1976d2;
-  border-top: 6px solid transparent;
+  border: 6px solid #f40096;
+  border-top-color: #ffffff00; /* More specific override */
   border-radius: 50%;
   animation: spin 1s linear infinite;
   box-shadow: 0 2px 12px rgba(25, 118, 210, 0.15);
@@ -141,4 +135,37 @@ font-size: bold;
   color: #90caf9;
   margin-bottom: 20px;
   text-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .detailsPaper,
+  .MuiPaper-root.detailsPaper {
+    padding: 20px !important;
+  }
+
+  .detailsContainer {
+    width: 95%;
+    max-width: none;
+    height: auto;
+    min-width: auto;
+  }
+
+  .image-container {
+    width: 100%;
+    min-width: auto;
+    max-width: none;
+    height: 250px;
+  }
+
+  .details-title {
+    font-size: 1.5rem;
+  }
+
+  .details-description,
+  .details-location,
+  .tag,
+  .date {
+    font-size: 1rem;
+  }
 }

@@ -62,9 +62,7 @@ export default function  Edit({recuerdo, handleClose, open,update} : NewMemoryPr
         setForm({ ...form, [name]: value });
 
     }
-const [loaderText, setloaderText] = useState ('');
     async function  handleDelete(id){
-        setloaderText('Eliminando...')
         setSent(true);
         await deleteMemory(id);
         handleClose();
@@ -75,8 +73,7 @@ const [loaderText, setloaderText] = useState ('');
 
     const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (sent) return; // Evita envíos dobles
-    setloaderText('Actualizando...')
+    if (sent) return; 
     setSent(true);
     try {
         const respuesta = await actualizarRecuerdo(id, form);
@@ -231,7 +228,7 @@ const [loaderText, setloaderText] = useState ('');
             {sent && (
                 <div className="padreLoading">
                                 <div className="loading" style={{ width: 18, height: 18 }}></div>
-                                <h4 className='loadingText'>{loaderText}</h4>
+                                
                             </div>
             )}
         </Dialog>

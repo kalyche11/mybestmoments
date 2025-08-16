@@ -12,6 +12,7 @@ import Details from './details';
 import { getRecuerdos,updateFavorite } from '../services/api.js';
 import { mover } from '../funtions/mover.js';
 import { Navigate } from 'react-router-dom';
+import Footer from './Footer';
 
 export default function Grilla() {
   // verificar si esta logueado
@@ -119,7 +120,7 @@ export default function Grilla() {
         {actualizando && (
           <Box className="loading-container">
             <div className="loading" />
-            <div className='loadingText'><Typography>Cargando recuerdos...</Typography></div>
+            
           </Box>
         )}
 
@@ -196,6 +197,7 @@ export default function Grilla() {
             ))}
         </motion.div>
       </Box>
+      <Footer />
     </Box>
   );
 }

@@ -1,6 +1,7 @@
 import { Card, CardContent, Typography, Button, Box } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import Footer from './Footer';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -84,6 +85,7 @@ export default function Home() {
           </CardContent>
         </Card>
       </motion.div>
+      <Footer />
     </Box>
   );
 }

@@ -20,23 +20,13 @@
 .loading {
   width: 48px;
   height: 48px;
-  border: 6px solid #1976d2;
-  border-top-color: #fff; /* More specific override */
+  border: 6px solid #f40096;
+  border-top-color: #ffffff00; /* More specific override */
   border-radius: 50%;
   animation: spin 1s linear infinite;
   box-shadow: 0 2px 12px rgba(25, 118, 210, 0.15);
 }
- 
-/* The text below the spinner */
-.loadingText {
-  color: black;
-  /* Añadimos un margen superior para separarlo del spinner */
-  margin-top: 24px;
-  margin-left: 57px;
-  /* Se elimina el margen izquierdo para un centrado correcto */
-  font-size: 3.1rem;
-  font-weight: bold;
-}
+
  
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -59,13 +49,13 @@
 /* Main container and layout */
 .grilla-container {
   min-height: 100vh;
-  padding: 48px 32px;
+  display: flex;
+  padding: 40px 0px;
   background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
 }
 
 .grilla-content {
-  max-width: 1400px; /* Increased max-width for more cards */
-  max-width: 1600px; /* Wider for more cards */
+  max-width: 90%; /* Wider for more cards */
   margin-left: auto;
   margin-right: auto;
 }
@@ -73,11 +63,10 @@
 /* Header section */
 .header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin-bottom: 24px;
   gap: 16px;
   flex-wrap: wrap;
+  flex-direction: row;
 }
 
 .header-title {
@@ -86,6 +75,8 @@
   background: linear-gradient(90deg, #ff8a00, #e52e71);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  width: 100%;
+  text-align: start;
 }
 
 .header-actions {
@@ -244,4 +235,19 @@
 .edit-button:hover {
   border-color: white !important;
   background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+
+/* --- Responsive Styles --- */
+@media (max-width: 653px) {
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch; /* Hace que ocupen todo el ancho */
+    width: 100%;
+    gap: 12px; /* Un poquito más de espacio entre ellos */
+  }
+
+  .header-actions > * {
+    width: 100%; /* Que el buscador y el botón se adapten al ancho */
+  }
 }

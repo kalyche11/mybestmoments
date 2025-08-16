@@ -195,8 +195,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 {sent && (
                     <div className="padreLoading">
                         <div className="loading" style={{ width: 18, height: 18 }}></div>
-                        <h4 className='loadingText'>Guardando...</h4>
-                                    
+
                     </div>
                     )}
         </Dialog>
