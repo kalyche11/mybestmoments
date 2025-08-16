@@ -192,7 +192,7 @@ export default function  Edit({recuerdo, handleClose, open,update} : NewMemoryPr
                             
                     </Stack>
                 </DialogContent>
-                <DialogActions>
+                <DialogActions className='dialog-actions-responsive'>
                     <div className='eliminar'>
                         <Button
                             type='button'
@@ -201,10 +201,10 @@ export default function  Edit({recuerdo, handleClose, open,update} : NewMemoryPr
                             disabled={sent}
                             onClick={() => handleDelete(id)}
                         >
-                            😬 Eliminar 😬
+                        Eliminar
                         </Button>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div className='button-group'>
                             <Button onClick={handleClose} color="secondary" variant="outlined">
                             Cancelar
                             </Button>

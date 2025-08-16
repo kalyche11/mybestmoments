@@ -19,3 +19,36 @@
     width: 100%;
   }
 }
+
+.dialog-actions-responsive {
+  display: flex;
+  justify-content: space-between; /* To push "Eliminar" to the left and the other buttons to the right */
+  align-items: center;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .dialog-actions-responsive {
+    flex-direction: column;
+    align-items: stretch; /* To make buttons take full width */
+    gap: 10px; /* Add some space between stacked elements */
+  }
+
+  .eliminar {
+    margin-right: 0; /* Remove auto margin when stacked */
+    width: 100%; /* Make delete button take full width */
+  }
+
+  .button-group {
+    flex-direction: column;
+    width: 100%; /* Make button group take full width */
+  }
+
+  .button-group button {
+    width: 100%; /* Make individual buttons take full width */
+  }
+}
