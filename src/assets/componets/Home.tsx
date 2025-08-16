@@ -56,7 +56,7 @@ export default function Home() {
                 color: "rgba(0,0,0,0.7)",
               }}
             >
-              Guarda y revive tus recuerdos más especiales, todo en un solo lugar.
+              Un espacio para compartir tus  recuerdos más especiales (●'◡'●)
             </Typography>
 
             <motion.div
