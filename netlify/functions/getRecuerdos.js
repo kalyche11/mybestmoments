@@ -10,13 +10,25 @@ exports.handler = async function(event, context) {
         "X-Master-Key": VITE_MASTER_KEY
       }
     });
+
+    if (!res.ok) {
+      console.error("API Error:", await res.text());
+      return {
+        statusCode: res.status,
+        body: JSON.stringify({ message: "Failed to fetch data" })
+      };
+    }
+
     const data = await res.json();
+    console.log("Data from API:", data);
+
     const sortedData = data.record.sort((a, b) => b.favorite - a.favorite);
     return {
       statusCode: 200,
       body: JSON.stringify(sortedData),
     };
-  } catch {
+  } catch (error) {
+    console.error("Function Error:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Something went wrong" }),
