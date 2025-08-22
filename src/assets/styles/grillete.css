@@ -51,7 +51,7 @@
   min-height: 100vh;
   display: flex;
   padding: 40px 0px;
-  background: linear-gradient(135deg, #fbc2eb 0%, #fce6f6 100%);
+  background: #fbc2eb ;
 }
 .grilla-content {
   max-width: 90%; /* Wider for more cards */
