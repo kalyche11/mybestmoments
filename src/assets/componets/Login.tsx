@@ -3,30 +3,41 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Footer from './Footer';
-const { VITE_USER1: USER1, VITE_USER2: USER2, VITE_PASSWORD: PASSWORD } = import.meta.env;
-
 
 export default function Login() {
     const navigate = useNavigate();
     const [error, setError] = useState('😊');
 
-    const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setError('Verificando...'); // Provide feedback to the user
         const formData = new FormData(e.currentTarget);
         const username = formData.get('username') as string;
         const password = formData.get('password') as string;
 
-        if(username === USER1 || username === USER2 && password === PASSWORD){
-            // Usamos un objeto para escalabilidad futura
-            const sessionData = {
-                isLogged: true,
-                username: username
-            };
-            // Corregimos el typo 'isLogesd' a 'session' y guardamos el objeto
-            localStorage.setItem('session', JSON.stringify(sessionData));
-            navigate('/grillete');
-        }else{
-            setError('❌ Credenciales incorrectas')
+        try {
+            const response = await fetch('/.netlify/functions/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                const sessionData = {
+                    isLogged: true,
+                    username: result.username
+                };
+                localStorage.setItem('session', JSON.stringify(sessionData));
+                navigate('/grillete');
+            } else {
+                setError(result.message || '❌ Credenciales incorrectas');
+            }
+        } catch (err) {
+            setError('❌ Ocurrió un error de red. Inténtalo de nuevo.');
         }
     };
 
