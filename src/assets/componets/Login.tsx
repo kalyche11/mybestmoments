@@ -120,6 +120,7 @@ export default function Login() {
                             variant="outlined"
                             margin="normal"
                             name='password'
+                            autocomplete="current-password"
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: 2,
