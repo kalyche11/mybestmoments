@@ -85,6 +85,7 @@
   align-items: center;
   justify-content: center;
   transition: background 0.4s;
+  max-width: 80%;
 }
 
 .loading {
