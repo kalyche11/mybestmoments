@@ -114,6 +114,11 @@
   margin-bottom: 12px;
   color: #e0e0e0;
   text-shadow: 0 1px 4px rgba(0,0,0,0.10);
+  max-height: 150px; /* Or your preferred height */
+  max-width: 400px;
+  overflow-y: auto;
+  text-align: justify;
+  padding-right: 15px; /* For scrollbar spacing */
 }
 
 .details-location {
