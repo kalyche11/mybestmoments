@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Footer from './Footer';
+const { VITE_USER1: USER1, VITE_USER2: USER2, VITE_PASSWORD: PASSWORD } = import.meta.env;
+
 
 export default function Login() {
     const navigate = useNavigate();
@@ -14,7 +16,7 @@ export default function Login() {
         const username = formData.get('username') as string;
         const password = formData.get('password') as string;
 
-        if(username === 'Carlinhos' || username === 'Grays_Gostosa' && password === 'PAPAIeusomuitogostoso'){
+        if(username === USER1 || username === USER2 && password === PASSWORD){
             // Usamos un objeto para escalabilidad futura
             const sessionData = {
                 isLogged: true,
