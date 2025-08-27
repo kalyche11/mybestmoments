@@ -41,7 +41,7 @@ export default function Details({ recuerdo, closeDetailGrid }) {
                         src={currentImage}
                         alt={title}
                         className="details-image"
-                        style={{ maxHeight: '400px', maxWidth: '400px' }}
+                        style={{ maxHeight: '400px', maxWidth: '320px' }}
                       />
 
                       <IconButton onClick={goNextImage} className="arrow-button right">
