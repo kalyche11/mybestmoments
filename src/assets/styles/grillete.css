@@ -48,6 +48,7 @@
 
 /* Main container and layout */
 .grilla-container {
+  position: relative;
   min-height: 100vh;
   display: flex;
   padding: 40px 0px;
@@ -209,6 +210,8 @@
   gap: 8px;
   justify-content: center;
 }
+
+
 
 .details-button {
   text-transform: none !important;

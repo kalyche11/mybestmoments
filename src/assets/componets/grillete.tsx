@@ -1,24 +1,22 @@
 // Grilla.tsx
-import { useState, useEffect } from 'react';
-import { Box, Grid, Paper, Button, Chip, Typography } from '@mui/material';
+import { useState, useEffect, useMemo } from 'react'; // Add useMemo
+import { Box, Paper, Button, Chip, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 
-import '../styles/grillete.css'; // asegúrate de importar tus clases
-import Buscar from './filter.js';
+import '../styles/grillete.css';
+import Buscar from './filter.tsx'; // Changed to .tsx
+import Loader from './loader.tsx';
 import NewMemoryButton from './newMemoryButton.js';
 import NewMemory from './newMemory.js';
 import Edit from './edit.js';
 import Details from './details';
-import { getRecuerdos,updateFavorite } from '../services/api.js';
-import { mover } from '../funtions/mover.js';
+import { getRecuerdos, updateFavorite } from '../services/api.js';
 import { Navigate } from 'react-router-dom';
 import Footer from './Footer';
 
 export default function Grilla() {
-  // verificar si esta logueado
- const session = localStorage.getItem('session');
+  const session = localStorage.getItem('session');
   const UserName = session ? JSON.parse(session).username : '';
-
 
   if (!session) {
     return <Navigate to="/login" />;
@@ -31,7 +29,14 @@ export default function Grilla() {
   const [ShowEdit, setShowEdit] = useState(false);
   const [showNewMemory, setShowNewMemory] = useState(false);
   const [update, setUpdate] = useState(false);
+  const [PageNumber, setPageNumber] = useState(1);
   const [actualizando, setactualizando] = useState(false);
+  const [showLoadder, setShowLoader] = useState(false); // Changed initial state
+  const [searchTerm, setSearchTerm] = useState(''); // New state
+
+  const handleLoadMore = () => {
+    setPageNumber((prev) => prev + 1);
+  };
 
   const closeDetailGrid = () => {
     setShowDetails(false);
@@ -42,18 +47,41 @@ export default function Grilla() {
     const fetchRecuerdos = async () => {
       setactualizando(true);
       const recuerdos = await getRecuerdos();
-      setRecuerdos(recuerdos);
       setAllRecuerdos(recuerdos);
       setactualizando(false);
     };
     fetchRecuerdos();
   }, [update]);
 
-  const toggleFavorite  = async (id: string | number) =>{
-    const response = await updateFavorite(ALL_RECUERDOS,id);
-    setUpdate(prev => !prev );
-  }
-    
+  const filteredRecuerdos = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return ALL_RECUERDOS;
+
+    return ALL_RECUERDOS.filter(
+      (item) =>
+        item.location.toLowerCase().includes(term) ||
+        (item.tags && item.tags.some((tag) => tag.toLowerCase().includes(term)))
+    );
+  }, [ALL_RECUERDOS, searchTerm]);
+
+  useEffect(() => {
+    setRecuerdos(filteredRecuerdos.slice(0, PageNumber * 4));
+    if (PageNumber * 4 < filteredRecuerdos.length) {
+      setShowLoader(true);
+    } else {
+      setShowLoader(false);
+    }
+  }, [PageNumber, filteredRecuerdos]);
+
+  useEffect(() => {
+    setPageNumber(1);
+  }, [searchTerm]);
+
+
+  const toggleFavorite = async (id: string | number) => {
+    await updateFavorite(ALL_RECUERDOS, id);
+    setUpdate((prev) => !prev);
+  };
 
   const handleClick = (recuerdo: any) => {
     setSelectedRecuerdo(recuerdo);
@@ -70,7 +98,6 @@ export default function Grilla() {
     show: {
       opacity: 1,
       transition: { staggerChildren: 0.06, delayChildren: 0.1 },
-      
     },
   };
 
@@ -83,28 +110,25 @@ export default function Grilla() {
   return (
     <Box className="grilla-container">
       <Box className="grilla-content">
-        {/* Header + search */}
         <Box className="header">
           <Typography variant="h3" className="header-title">
             Tus mejores momentos, {UserName}
           </Typography>
 
           <Box className="header-actions">
-            <Buscar recuerdos={ALL_RECUERDOS} setRecuerdos={setRecuerdos} />
+            <Buscar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             {RECUERDOS.length > 0 && (
               <NewMemoryButton handleClick={() => setShowNewMemory(true)} />
             )}
           </Box>
         </Box>
 
-        {/* Empty state */}
         {!actualizando && RECUERDOS.length === 0 && (
           <Typography className="error" variant="h5">
             😕 NO SE ENCONTRARON RESULTADOS 😕
           </Typography>
         )}
 
-        {/* Modales */}
         {showNewMemory && (
           <NewMemory handleClose={() => setShowNewMemory(false)} update={setUpdate} open />
         )}
@@ -118,87 +142,78 @@ export default function Grilla() {
           />
         )}
 
-        {/* Loading */}
         {actualizando && (
           <Box className="loading-container">
             <div className="loading" />
-            
           </Box>
         )}
 
-        {/* Details */}
         {showDetails && selectedRecuerdo && (
           <Details recuerdo={selectedRecuerdo} closeDetailGrid={closeDetailGrid} />
         )}
 
-        {/* Grid */}
         <motion.div variants={containerVariants} initial="hidden" animate="show" className='grillaContainer'>
-            {RECUERDOS.map((recuerdo: any) => (
-              <div key={recuerdo.id}  >
-                <motion.div className="card-motion-wrapper" variants={itemVariants} whileHover="hover">
-                  <Paper className="card-glass">
-                    {/* Imagen */}
-                    <Box className="card-image-container">
-                      <img src={recuerdo.url} alt={recuerdo.title} className="card-image" />
-                      <Box className="card-image-overlay" />
-                      <Box className="card-image-content">
-                        <Typography variant="subtitle1" className="card-title">
-                          {recuerdo.title}
-                        </Typography>
-                        <button
-                          onClick={() => toggleFavorite(recuerdo.id)}
-                          aria-label={recuerdo.favorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-                          className={`favorite-button${recuerdo.favorite ? ' favorited' : ''}`}
-                        >
-                          {recuerdo.favorite ? '★' : '☆'}
-                        </button>
-                      </Box>
+          {RECUERDOS.map((recuerdo: any) => (
+            <div key={recuerdo.id}>
+              <motion.div className="card-motion-wrapper" variants={itemVariants} whileHover="hover">
+                <Paper className="card-glass">
+                  <Box className="card-image-container">
+                    <img src={recuerdo.url} alt={recuerdo.title} className="card-image" loading="lazy" />
+                    <Box className="card-image-overlay" />
+                    <Box className="card-image-content">
+                      <Typography variant="subtitle1" className="card-title">
+                        {recuerdo.title}
+                      </Typography>
+                      <button
+                        onClick={() => toggleFavorite(recuerdo.id)}
+                        aria-label={recuerdo.favorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                        className={`favorite-button${recuerdo.favorite ? ' favorited' : ''}`}
+                      >
+                        {recuerdo.favorite ? '★' : '☆'}
+                      </button>
                     </Box>
+                  </Box>
 
-                    {/* Body */}
-                    <div className="card-body">
-                      <Typography variant="body2" className="card-description">
-                        {recuerdo.description.length > 150
-                          ? recuerdo.description.slice(0, 150) + '...'
-                          : recuerdo.description}
-                      </Typography>
+                  <div className="card-body">
+                    <Typography variant="body2" className="card-description">
+                      {recuerdo.description.length > 150
+                        ? recuerdo.description.slice(0, 150) + '...'
+                        : recuerdo.description}
+                    </Typography>
 
-                      <Typography variant="body2" className="card-location">
-                        📍 {recuerdo.location}
-                      </Typography>
+                    <Typography variant="body2" className="card-location">
+                      📍 {recuerdo.location}
+                    </Typography>
 
-                      <Typography variant="caption" className="card-date">
-                        📅 {recuerdo.date}
-                      </Typography>
+                    <Typography variant="caption" className="card-date">
+                      📅 {recuerdo.date}
+                    </Typography>
 
-                      {/* Tags */}
-                      {!!recuerdo.tags?.length && (
-                        <div className="card-tags">
-                          {recuerdo.tags.slice(0, 4).map((tag: string) => (
-                            <Chip key={tag} label={tag} size="small" className="card-tag-chip" />
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    {!!recuerdo.tags?.length && (
+                      <div className="card-tags">
+                        {recuerdo.tags.slice(0, 4).map((tag: string) => (
+                          <Chip key={tag} label={tag} size="small" className="card-tag-chip" />
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                    {/* Actions */}
-                    <div className="card-actions">
-                      <Button variant="contained" onClick={() => handleClick(recuerdo)} className="details-button">
-                        Ver detalles
-                      </Button>
+                  <div className="card-actions">
+                    <Button variant="contained" onClick={() => handleClick(recuerdo)} className="details-button">
+                      Ver detalles
+                    </Button>
 
-                      <Button variant="outlined" color="primary" onClick={handleShowEdit(recuerdo)} className="edit-button">
-                        Editar
-                      </Button>
-                    </div>
-                  </Paper>
-                  
-                </motion.div>
-                
-              </div>
-            ))}
+                    <Button variant="outlined" color="primary" onClick={handleShowEdit(recuerdo)} className="edit-button">
+                      Editar
+                    </Button>
+                  </div>
+                </Paper>
+              </motion.div>
+            </div>
+          ))}
         </motion.div>
       </Box>
+      {showLoadder && <Loader setPageNumber={handleLoadMore} />}
       <Footer />
     </Box>
   );

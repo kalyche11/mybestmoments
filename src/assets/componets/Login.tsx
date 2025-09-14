@@ -39,6 +39,7 @@ export default function Login() {
         } catch (err) {
             setError('❌ Ocurrió un error de red. Inténtalo de nuevo.');
         }
+       
     };
 
     return (

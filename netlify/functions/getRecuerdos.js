@@ -15,12 +15,11 @@ export const handler = async function(event, context) {
       console.error("API Error:", await res.text());
       return {
         statusCode: res.status,
-        body: JSON.stringify({ message: "Failed to fetch data" })
+        body: JSON.stringify({ message: "Error al traer datos" })
       };
     }
 
     const data = await res.json();
-    console.log("Data from API:", data);
 
     const sortedData = data.record.sort((a, b) => b.favorite - a.favorite);
     return {
