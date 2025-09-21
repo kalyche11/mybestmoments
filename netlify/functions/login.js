@@ -9,7 +9,7 @@ exports.handler = async function(event) {
     const { username, password } = JSON.parse(event.body);
     
     // Get the secret credentials from the environment variables
-    const { VITE_USER1, VITE_USER2, VITE_PASSWORD } = import.meta.env;
+    const { VITE_USER1, VITE_USER2, VITE_PASSWORD } = process.env;
 
     // Check if the credentials match
     if (
