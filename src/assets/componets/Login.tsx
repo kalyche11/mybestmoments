@@ -104,7 +104,7 @@ export default function Login() {
                     <form onSubmit={handleLogin}>
                         <TextField
                             fullWidth
-                            label="Username"
+                            label="Nombre"
                             variant="outlined"
                             margin="normal"
                             name='username'
@@ -117,7 +117,7 @@ export default function Login() {
                         <TextField
                             fullWidth
                             type="password"
-                            label="Password"
+                            label="¿Puedes Entrar?"
                             variant="outlined"
                             margin="normal"
                             name='password'
