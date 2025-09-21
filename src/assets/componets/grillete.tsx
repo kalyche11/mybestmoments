@@ -4,11 +4,11 @@ import { Box, Paper, Button, Chip, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 
 import '../styles/grillete.css';
-import Buscar from './filter.tsx'; // Changed to .tsx
-import Loader from './loader.tsx';
-import NewMemoryButton from './newMemoryButton.js';
-import NewMemory from './newMemory.js';
-import Edit from './edit.js';
+import Buscar from './filter'; 
+import Loader from './loader';
+import NewMemoryButton from './newMemoryButton';
+import NewMemory from './newMemory';
+import Edit from './edit';
 import Details from './details';
 import { getRecuerdos, updateFavorite } from '../services/api.js';
 import { Navigate,useNavigate } from 'react-router-dom';
@@ -54,7 +54,7 @@ import Footer from './Footer';
   const [ALL_RECUERDOS, setAllRecuerdos] = useState<any[]>([]);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedRecuerdo, setSelectedRecuerdo] = useState<any>(null);
-  const [ShowEdit, setShowEdit] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [showNewMemory, setShowNewMemory] = useState(false);
   const [update, setUpdate] = useState(false);
   const [PageNumber, setPageNumber] = useState(1);
@@ -161,11 +161,11 @@ import Footer from './Footer';
           <NewMemory handleClose={() => setShowNewMemory(false)} update={setUpdate} open />
         )}
 
-        {ShowEdit && (
+        {showEdit && (
           <Edit
             handleClose={() => setShowEdit(false)}
             recuerdo={selectedRecuerdo}
-            open={ShowEdit}
+            open={showEdit}
             update={setUpdate}
           />
         )}
