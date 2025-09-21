@@ -204,9 +204,9 @@ import Footer from './Footer';
 
                   <div className="card-body">
                     <Typography variant="body2" className="card-description">
-                      {recuerdo.description.length > 150
+                      {recuerdo.description && recuerdo.description.length > 150
                         ? recuerdo.description.slice(0, 150) + '...'
-                        : recuerdo.description}
+                        : recuerdo.description || ""}
                     </Typography>
 
                     <Typography variant="body2" className="card-location">
