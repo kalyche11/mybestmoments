@@ -9,7 +9,7 @@ exports.handler = async function(event) {
     const { username, password } = JSON.parse(event.body);
     
     // Get the secret credentials from the environment variables
-    const { VITE_USER1, VITE_USER2, VITE_PASSWORD } = process.env;
+    const { VITE_USER1, VITE_USER2, VITE_PASSWORD } = import.meta.env;
 
     // Check if the credentials match
     if (
@@ -26,7 +26,7 @@ exports.handler = async function(event) {
       // If they don't match, send back an error.
       return {
         statusCode: 401,
-        body: JSON.stringify({ success: false, message: 'Invalid credentials' }),
+        body: JSON.stringify({ success: false, message: 'No puedes entrar ahora bro :(' }),
       };
     }
   } catch (error) {
