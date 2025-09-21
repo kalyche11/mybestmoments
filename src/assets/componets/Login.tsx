@@ -8,39 +8,35 @@ export default function Login() {
     const navigate = useNavigate();
     const [error, setError] = useState('😊');
 
-    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setError('Verificando...'); // Provide feedback to the user
-        const formData = new FormData(e.currentTarget);
-        const username = formData.get('username') as string;
-        const password = formData.get('password') as string;
+const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setError("Verificando...");
 
-        try {
-            const response = await fetch('/.netlify/functions/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password }),
-            });
+  const formData = new FormData(e.currentTarget);
+  const username = formData.get("username") as string;
+  const password = formData.get("password") as string;
 
-            const result = await response.json();
+  try {
+    const response = await fetch("/.netlify/functions/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-            if (response.ok && result.success) {
-                const sessionData = {
-                    isLogged: true,
-                    username: result.username
-                };
-                localStorage.setItem('session', JSON.stringify(sessionData));
-                navigate('/grillete');
-            } else {
-                setError('¡Ya no tienes acceso a esta web¡. Debo dejarte ir 🕊️');
-            }
-        } catch (err) {
-            setError('❌ Ocurrió un error de red. Inténtalo de nuevo.');
-        }
-       
-    };
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("username", result.username);
+      navigate("/grillete");
+    } else {
+      setError("¡Ya no tienes acceso a esta web¡. Debo dejarte ir 🕊️'");
+    }
+  } catch {
+    setError("❌ Error de red. Intenta de nuevo.");
+  }
+};
+
 
     return (
         <Box
