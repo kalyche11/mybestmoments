@@ -17,8 +17,9 @@ import Footer from './Footer';
 export default function Grilla() {
   const session = localStorage.getItem('session');
   const UserName = session ? JSON.parse(session).username : '';
+  const { VITE_USER1 } = process.env;
 
-   if (UserName != process.env.VITE_USER1 ) {
+   if (!VITE_USER1 || !session ) {
     return <Navigate to="/login" />;
   }
 
