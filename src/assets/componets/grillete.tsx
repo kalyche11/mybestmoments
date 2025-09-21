@@ -18,9 +18,10 @@ export default function Grilla() {
   const session = localStorage.getItem('session');
   const UserName = session ? JSON.parse(session).username : '';
 
-  if (!session) {
+   if (UserName != process.env.VITE_USER1 ) {
     return <Navigate to="/login" />;
   }
+
 
   const [RECUERDOS, setRecuerdos] = useState<any[]>([]);
   const [ALL_RECUERDOS, setAllRecuerdos] = useState<any[]>([]);
