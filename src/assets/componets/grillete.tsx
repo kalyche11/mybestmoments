@@ -11,17 +11,42 @@ import NewMemory from './newMemory.js';
 import Edit from './edit.js';
 import Details from './details';
 import { getRecuerdos, updateFavorite } from '../services/api.js';
-import { Navigate } from 'react-router-dom';
+import { Navigate,useNavigate } from 'react-router-dom';
 import Footer from './Footer';
 
-export default function Grilla() {
-  const session = localStorage.getItem('session');
-  const UserName = session ? JSON.parse(session).username : '';
-  const VITE_USER1 = import.meta.env.VITE_USER1;
+  export default function Grilla() {
+  const navigate = useNavigate();
+  const [valid, setValid] = useState<boolean | null>(null);
+  const username = localStorage.getItem("username") || "";
 
-   if (!VITE_USER1 || !session ) {
-    return <Navigate to="/login" />;
-  }
+  useEffect(() => {
+    const verifySession = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setValid(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("/.netlify/functions/verify", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const result = await response.json();
+        setValid(result.valid);
+      } catch {
+        setValid(false);
+      }
+    };
+
+    verifySession();
+  }, []);
+
+  if (valid === null) return <p>🔄 Verificando sesión...</p>;
+  if (!valid) return <Navigate to="/login" />;
+
+    
 
 
 
