@@ -13,7 +13,7 @@ exports.handler = async function(event) {
 
     // Check if the credentials match
     if (
-      (username === VITE_USER1 || username === VITE_USER2) &&
+      (username === VITE_USER1) &&
       password === VITE_PASSWORD
     ) {
       // If they match, send back a success response.
