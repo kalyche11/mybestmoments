@@ -34,7 +34,7 @@ export default function Login() {
                 localStorage.setItem('session', JSON.stringify(sessionData));
                 navigate('/grillete');
             } else {
-                setError(result.message || '¡Ya no tienes acceso a esta web¡. Debo dejarte ir 🕊️');
+                setError('¡Ya no tienes acceso a esta web¡. Debo dejarte ir 🕊️');
             }
         } catch (err) {
             setError('❌ Ocurrió un error de red. Inténtalo de nuevo.');
