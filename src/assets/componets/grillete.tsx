@@ -140,7 +140,7 @@ import Footer from './Footer';
       <Box className="grilla-content">
         <Box className="header">
           <Typography variant="h3" className="header-title">
-            Tus mejores momentos, {UserName}
+            Tus mejores momentos, {username}
           </Typography>
 
           <Box className="header-actions">
