@@ -19,6 +19,18 @@ import Footer from './Footer';
   const [valid, setValid] = useState<boolean | null>(null);
   const username = localStorage.getItem("username") || "";
 
+  const [RECUERDOS, setRecuerdos] = useState<any[]>([]);
+  const [ALL_RECUERDOS, setAllRecuerdos] = useState<any[]>([]);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedRecuerdo, setSelectedRecuerdo] = useState<any>(null);
+  const [showEdit, setShowEdit] = useState(false);
+  const [showNewMemory, setShowNewMemory] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const [PageNumber, setPageNumber] = useState(1);
+  const [actualizando, setactualizando] = useState(false);
+  const [showLoadder, setShowLoader] = useState(false); // Changed initial state
+  const [searchTerm, setSearchTerm] = useState(''); // New state
+
   useEffect(() => {
     const verifySession = async () => {
       const token = localStorage.getItem("token");
@@ -42,25 +54,6 @@ import Footer from './Footer';
 
     verifySession();
   }, []);
-
-  if (valid === null) return <p>🔄 Verificando sesión...</p>;
-  if (!valid) return <Navigate to="/login" />;
-
-    
-
-
-
-  const [RECUERDOS, setRecuerdos] = useState<any[]>([]);
-  const [ALL_RECUERDOS, setAllRecuerdos] = useState<any[]>([]);
-  const [showDetails, setShowDetails] = useState(false);
-  const [selectedRecuerdo, setSelectedRecuerdo] = useState<any>(null);
-  const [showEdit, setShowEdit] = useState(false);
-  const [showNewMemory, setShowNewMemory] = useState(false);
-  const [update, setUpdate] = useState(false);
-  const [PageNumber, setPageNumber] = useState(1);
-  const [actualizando, setactualizando] = useState(false);
-  const [showLoadder, setShowLoader] = useState(false); // Changed initial state
-  const [searchTerm, setSearchTerm] = useState(''); // New state
 
   const handleLoadMore = () => {
     setPageNumber((prev) => prev + 1);
@@ -134,6 +127,9 @@ import Footer from './Footer';
     show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: 'easeOut' } },
     hover: { y: -10, transition: { duration: 0.15 } },
   };
+
+  if (valid === null) return <p>🔄 Verificando sesión...</p>;
+  if (!valid) return <Navigate to="/login" />;
 
   return (
     <Box className="grilla-container">
