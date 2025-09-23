@@ -10,9 +10,9 @@ export async function handler(event) {
   try {
     const { username, password } = JSON.parse(event.body);
 
-    const { VITE_USER1, VITE_PASSWORD } = process.env;
+    const { VITE_USER1, VITE_USER2, VITE_PASSWORD } = process.env;
 
-    if (username === VITE_USER1 && password === VITE_PASSWORD) {
+    if (username === VITE_USER1 || username === VITE_USER2 && password === VITE_PASSWORD) {
       const token = jwt.sign({ username }, SECRET, { expiresIn: "2h" });
 
       return {
