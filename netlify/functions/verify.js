@@ -17,13 +17,17 @@ export async function handler(event) {
 
     const decoded = jwt.verify(token, SECRET);
 
-    // solo permitir al usuario correcto
-    if (decoded.username !== process.env.VITE_USER1 || decoded.username !== process.env.VITE_USER2) {
+    // Lista de usuarios autorizados
+    const authorizedUsers = [process.env.VITE_USER1, process.env.VITE_USER2];
+
+    // Verificar si el usuario del token NO está en la lista de autorizados
+    if (!authorizedUsers.includes(decoded.username)) {
       return { statusCode: 403, body: JSON.stringify({ valid: false }) };
     }
 
     return { statusCode: 200, body: JSON.stringify({ valid: true, user: decoded.username }) };
-  } catch {
+  } catch (error) {
+    // En caso de token inválido o expirado, jwt.verify lanza una excepción
     return { statusCode: 401, body: JSON.stringify({ valid: false }) };
   }
 }
