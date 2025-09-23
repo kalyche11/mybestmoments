@@ -18,7 +18,7 @@ export async function handler(event) {
     const decoded = jwt.verify(token, SECRET);
 
     // solo permitir al usuario correcto
-    if (decoded.username !== process.env.VITE_USER1) {
+    if (decoded.username !== process.env.VITE_USER1 || decoded.username !== process.env.VITE_USER2) {
       return { statusCode: 403, body: JSON.stringify({ valid: false }) };
     }
 
