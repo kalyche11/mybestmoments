@@ -30,7 +30,7 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
       localStorage.setItem("username", result.username);
       navigate("/grillete");
     } else {
-      setError("¡Ya no tienes acceso a esta web¡. Debo dejarte ir 🕊️'");
+      setError("¿Cómo llegaste a esta página bro?. ¡Get the fuck up, BITCH!");
     }
   } catch {
     setError("❌ Error de red. Intenta de nuevo.");
