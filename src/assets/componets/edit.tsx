@@ -10,8 +10,9 @@ import {
     TextField,
     Typography,
     Stack,
+    IconButton
 } from '@mui/material';
-
+import DeleteIcon from '@mui/icons-material/Delete';
 interface NewMemoryProps {
     handleClose: () => void;
     open: boolean;
@@ -44,7 +45,11 @@ export default function  Edit({recuerdo, handleClose, open,update} : NewMemoryPr
         date: date || ''
 
     });
-
+ // 🔹 Elimina una imagen específica del arreglo
+    const handleDeleteImage = (index: number) => {
+    const nuevasImagenes = form.images.filter((_, i) => i !== index);
+    setForm({ ...form, images: nuevasImagenes });
+  };
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 
         const [name, value] = [e.target.name, e.target.value];
@@ -62,7 +67,7 @@ export default function  Edit({recuerdo, handleClose, open,update} : NewMemoryPr
         setForm({ ...form, [name]: value });
 
     }
-    async function  handleDelete(id){
+    async function  handleDelete(id: any){
         setSent(true);
         await deleteMemory(id);
         handleClose();
@@ -139,6 +144,23 @@ export default function  Edit({recuerdo, handleClose, open,update} : NewMemoryPr
                             variant="outlined"
                             margin="dense"
                         />
+                        <Typography variant="h5" fontWeight="bold" fontFamily="cambria" align='left' sx={{mt:2}}>
+                            IMÁGEN PRINCIPAL 🖼️
+                        </Typography>
+                        {/* 🔹 Vista previa de imagen principal */}
+                        {form.url && (
+                        <div className="image-preview-container">
+                            <img src={form.url} alt="principal" className="image-preview" />
+                            <IconButton
+                            className="delete-icon"
+                            color="error"
+                            onClick={() => setForm({ ...form, url: "" })}
+                            >
+                            <DeleteIcon />
+                                </IconButton>
+                        </div>
+                            )}
+
                         <TextField
                             label="Imagenes adicionales (links separados por comas)"
                             name="images"
@@ -148,6 +170,28 @@ export default function  Edit({recuerdo, handleClose, open,update} : NewMemoryPr
                             variant="outlined"
                             margin="dense"
                         />
+                        <Typography variant="h5" fontWeight="bold" fontFamily="cambria" align='center' sx={{mt:2}}>
+                            IMÁGENES ADICIONALES 🖼️
+                        </Typography>
+
+
+                            {/* 🔹 Vista previa de imágenes adicionales */}
+                            {form.images && form.images.length > 0 && (
+                            <div className="gallery-preview">
+                                {form.images.map((img, index) => (
+                                <div className="image-item" key={index}>
+                                    <img src={img} alt={`img-${index}`} className="image-thumb" />
+                                    <IconButton
+                                    className="delete-icon"
+                                    color="error"
+                                    onClick={() => handleDeleteImage(index)}
+                                    >
+                                    <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                </div>
+                                ))}
+                            </div>
+                            )}
                         <TextField
                             label="Description"
                             name="description"

@@ -17,11 +17,12 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
   const password = formData.get("password") as string;
 
   try {
-    const response = await fetch("/.netlify/functions/login", {
+    const response = await fetch("./netlify/functions/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
+    console.log("REspuestas",response);
 
     const result = await response.json();
 
