@@ -124,10 +124,21 @@ const handleDeleteImage = (index: number) => {
                             fullWidth
                             variant="outlined"
                             margin="dense"
+                            value={form.url}
                         />
                         {form.url && (
                             <div className="previewContainer">
                                 <img src={form.url} alt="Preview" className="previewImage" />
+                                <IconButton
+                                        className="delete-icon"
+                                        color="error"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setForm(prev => ({ ...prev, url: '' }));
+                                        }}
+                                        >
+                                <DeleteIcon fontSize="small" />
+                                </IconButton>
                             </div>
                         )}
                         <TextField
@@ -137,7 +148,7 @@ const handleDeleteImage = (index: number) => {
                             fullWidth
                             variant="outlined"
                             margin="dense"
-                            value={form.images}
+                            value={form.images.join(', ')}
                         />
                         {form.images && (
                             <div className="gallery-preview">
