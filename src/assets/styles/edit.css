@@ -93,16 +93,52 @@
 .delete-icon:hover {
   background-color: #ffcccc !important;
 }
-/* 🔹 Animación de gradient móvil */
-@keyframes gradientShift {
+/* 🔹 Animación de snake border */
+@keyframes snakeBorder {
   0% {
-    background: linear-gradient(90deg, #ff8a00, #e52e71);
+    background: linear-gradient(0deg, #ff8a00, #ff8a00) bottom,
+                linear-gradient(90deg, #e52e71, #e52e71) left,
+                linear-gradient(180deg, #ff8a00, #ff8a00) top,
+                linear-gradient(270deg, #e52e71, #e52e71) right;
+    background-size: 100% 3px, 3px 100%, 100% 3px, 3px 100%;
+    background-position: 0 100%, 0 0, 100% 0, 100% 100%;
+    background-repeat: no-repeat;
+  }
+  25% {
+    background: linear-gradient(0deg, #e52e71, #e52e71) bottom,
+                linear-gradient(90deg, #ff8a00, #ff8a00) left,
+                linear-gradient(180deg, #ff8a00, #ff8a00) top,
+                linear-gradient(270deg, #e52e71, #e52e71) right;
+    background-size: 100% 3px, 3px 100%, 100% 3px, 3px 100%;
+    background-position: 0 100%, 0 0, 100% 0, 100% 100%;
+    background-repeat: no-repeat;
   }
   50% {
-    background: linear-gradient(90deg, #e52e71, #ff8a00);
+    background: linear-gradient(0deg, #ff8a00, #ff8a00) bottom,
+                linear-gradient(90deg, #e52e71, #e52e71) left,
+                linear-gradient(180deg, #e52e71, #e52e71) top,
+                linear-gradient(270deg, #ff8a00, #ff8a00) right;
+    background-size: 100% 3px, 3px 100%, 100% 3px, 3px 100%;
+    background-position: 0 100%, 0 0, 100% 0, 100% 100%;
+    background-repeat: no-repeat;
+  }
+  75% {
+    background: linear-gradient(0deg, #e52e71, #e52e71) bottom,
+                linear-gradient(90deg, #ff8a00, #ff8a00) left,
+                linear-gradient(180deg, #e52e71, #e52e71) top,
+                linear-gradient(270deg, #ff8a00, #ff8a00) right;
+    background-size: 100% 3px, 3px 100%, 100% 3px, 3px 100%;
+    background-position: 0 100%, 0 0, 100% 0, 100% 100%;
+    background-repeat: no-repeat;
   }
   100% {
-    background: linear-gradient(90deg, #ff8a00, #e52e71);
+    background: linear-gradient(0deg, #ff8a00, #ff8a00) bottom,
+                linear-gradient(90deg, #e52e71, #e52e71) left,
+                linear-gradient(180deg, #ff8a00, #ff8a00) top,
+                linear-gradient(270deg, #e52e71, #e52e71) right;
+    background-size: 100% 3px, 3px 100%, 100% 3px, 3px 100%;
+    background-position: 0 100%, 0 0, 100% 0, 100% 100%;
+    background-repeat: no-repeat;
   }
 }
 
@@ -111,19 +147,18 @@
   width: 100%;
   max-width: 220px;
   margin: 10px auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   padding: 3px;
-  background: linear-gradient(90deg, #ff8a00, #e52e71);
   border-radius: 10px;
-  animation: gradientShift 3s ease-in-out infinite;
+  animation: snakeBorder 3s ease-in-out infinite;
 }
 .image-preview {
   width: 100%;
+  height: auto;
+  aspect-ratio: 1;
   border-radius: 8px;
   object-fit: cover;
   background: white;
+  display: block;
 }
 
 
