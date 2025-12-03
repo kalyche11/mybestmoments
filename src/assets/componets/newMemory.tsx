@@ -137,6 +137,7 @@ const handleDeleteImage = (index: number) => {
                             fullWidth
                             variant="outlined"
                             margin="dense"
+                            value={form.images}
                         />
                         {form.images && (
                             <div className="gallery-preview">
