@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState } from 'react';
 import { crearNuevoRecuerdo } from '../services/api.js';
 import '../styles/newMemory.css';
 import {
@@ -10,9 +10,10 @@ import {
     TextField,
     Typography,
     Stack,
+    IconButton
 } from '@mui/material';
 import { nanoid } from 'nanoid';
-
+import DeleteIcon from '@mui/icons-material/Delete';
 interface NewMemoryProps {
     handleClose: () => void;
     open: boolean;
@@ -51,7 +52,7 @@ interface FormState {
             
         }else if (name === 'tags') {
             // Convierte la cadena de etiquetas separadas por comas en un array
-            const tagsArray = value.split(',').map(tag => tag.trim());
+            const tagsArray = value.split(',').map(tag => tag.trim()).filter(Boolean);
             setForm({ ...form, [name]: tagsArray });
             
         }else
@@ -69,7 +70,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
         // Limpia el formulario después de guardar
         setForm({
-            id:'',
+            id:nanoid(),
             title: '',
             url: '',
             images: [],
@@ -81,16 +82,19 @@ const handleSubmit = async (e: React.FormEvent) => {
 
         handleClose();
     } catch (error) {
-        console.error('Error al crear el recuerdo:', error);
         alert('Hubo un problema al guardar el recuerdo. Intenta de nuevo.');
     } finally {
         setSent(false);
         update(prev => !prev);
     }
 };
-
-
-    
+const handleDeleteImage = (index: number) => {
+    setForm(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index)
+        })
+    );    
+}
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth >
@@ -121,6 +125,11 @@ const handleSubmit = async (e: React.FormEvent) => {
                             variant="outlined"
                             margin="dense"
                         />
+                        {form.url && (
+                            <div className="previewContainer">
+                                <img src={form.url} alt="Preview" className="previewImage" />
+                            </div>
+                        )}
                         <TextField
                             label="Imagenes adicionales (links separados por comas)"
                             name="images"
@@ -129,7 +138,22 @@ const handleSubmit = async (e: React.FormEvent) => {
                             variant="outlined"
                             margin="dense"
                         />
-                        
+                        {form.images && (
+                            <div className="gallery-preview">
+                                {form.images.map((img, index) => ( 
+                                    <div key={index} className='image-item'>
+                                        <img  src={img.trim()} alt={`Preview ${index + 1}`} className="image-thumb" />
+                                    <IconButton
+                                        className="delete-icon"
+                                        color="error"
+                                        onClick={() => handleDeleteImage(index)}
+                                        >
+                                    <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <TextField
                             label="Description"
                             name="description"
