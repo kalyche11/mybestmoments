@@ -33,8 +33,8 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     } else {
       setError("¿Cómo llegaste a esta página bro?. ¡Get the fuck up, BITCH!");
     }
-  } catch {
-    setError("❌ Error de red. Intenta de nuevo.");
+  } catch (err) {
+    setError(`❌ Error de red. Intenta de nuevo. ${err}`);
   }
 };
 
