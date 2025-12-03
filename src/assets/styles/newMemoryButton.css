@@ -15,24 +15,36 @@
 }
 
 /* 🔹 Ícono de eliminar (basurero) */
+/* 🔹 Corrige posición del icono dentro de la imagen principal */
+.previewContainer {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 400px;
+}
+
+.previewContainer img {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
 .previewContainer .delete-icon {
   position: absolute !important;
-  top: 4px;      /* esquina superior */
-  right: 4px;    /* misma separación que las adicionales */
+  top: 8px;
+  right: 8px;
+  z-index: 2; /* ← Esto es crucial */
   background-color: rgba(255, 255, 255, 0.85) !important;
   border-radius: 50%;
-  padding: 4px;
+  padding: 4px !important;
   transition: background-color 0.2s ease;
 }
+
 .previewContainer .delete-icon:hover {
   background-color: #ffcccc !important;
 }
 
-.previewContainer {
-  position: relative;
-  display: inline-block;
-  margin-top: 10px;
-}
 .new-memory-button .plus-icon {
     font-size: 30px;
     line-height: 1;

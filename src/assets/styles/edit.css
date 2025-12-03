@@ -116,7 +116,7 @@
   aspect-ratio: 1;
   padding: 3px;
   border-radius: 10px;
-  background: linear-gradient(90deg, #ff8a00, #e52e71);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
 }
 
 .image-preview {
