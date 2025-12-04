@@ -107,25 +107,40 @@
 }
 
 .image-preview-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  place-items: center;
+  position: relative;
   width: 100%;
   max-width: 220px;
-  margin: 10px auto;
-  aspect-ratio: 1;
-  padding: 3px;
-  border-radius: 10px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+  margin: 12px auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+  background-color: #f8f8f8;
 }
 
 .image-preview {
-  width: calc(100% - 6px);
-  height: calc(100% - 6px);
-  border-radius: 8px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  background: white;
   animation: zoomPulse 3s ease-in-out infinite;
+}
+
+.delete-icon {
+  position: absolute !important;
+  bottom: 8px;
+  right: 8px;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 50%;
+  padding: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.delete-icon:hover {
+  background-color: #ffe6e6 !important;
+  transform: scale(1.1);
 }
 
 

@@ -157,7 +157,7 @@ export default function  Edit({recuerdo, handleClose, open,update} : NewMemoryPr
                             onClick={() => setForm({ ...form, url: "" })}
                             >
                             <DeleteIcon />
-                                </IconButton>
+                            </IconButton>
                         </div>
                             )}
 

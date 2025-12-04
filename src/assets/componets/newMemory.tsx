@@ -127,21 +127,11 @@ const handleDeleteImage = (index: number) => {
                             value={form.url}
                         />
                         {form.url && (
-                            <div
-                                className="previewContainer"
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    position: 'relative',
-                                    padding: 8
-                                }}
-                            >
+                            <div className="previewContainer">
                                 <img
                                     src={form.url}
                                     alt="Preview"
                                     className="previewImage"
-                                    style={{ maxWidth: '100%', maxHeight: 300, objectFit: 'contain', borderRadius: 8 }}
                                 />
                                 <IconButton
                                     className="delete-icon"
@@ -150,7 +140,6 @@ const handleDeleteImage = (index: number) => {
                                         e.preventDefault();
                                         setForm(prev => ({ ...prev, url: '' }));
                                     }}
-                                    style={{ position: 'absolute', top: 8, right: 8 }}
                                 >
                                     <DeleteIcon fontSize="small" />
                                 </IconButton>
