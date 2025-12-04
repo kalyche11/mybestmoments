@@ -54,15 +54,7 @@
 }
 
 /* 🔹 Ícono de eliminar (basurero) */
-.delete-icon {
-  position: absolute !important;
-  bottom: 4px;
-  right: 4px;
-  background-color: rgba(255, 255, 255, 0.85) !important;
-  border-radius: 50%;
-  padding: 4px;
-  transition: background-color 0.2s ease;
-}
+
 /* 🔹 Galería de imágenes adicionales */
 .gallery-preview {
   display: flex;
@@ -90,9 +82,7 @@
 .image-thumb:hover {
   transform: scale(1.03);
 }
-.delete-icon:hover {
-  background-color: #ffcccc !important;
-}
+
 /* 🔹 Animación de zoom suave */
 @keyframes zoomPulse {
   0% {
@@ -121,6 +111,8 @@
 }
 
 .image-preview {
+  grid-column: 1;
+  grid-row: 1;
   width: 100%;
   height: 100%;
   object-fit: cover;

@@ -36,7 +36,9 @@
 }
 
 .previewContainer {
-  display: flex;
+  display: grid;
+  place-items: center;
+  position: relative;
   width: 100%;
   max-width: 400px;
   aspect-ratio: 1 / 1;
@@ -46,13 +48,8 @@
   background-color: #f9f9f9;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
 }
-.previewContainer .imgcontainer{
-  align-items: center;
-  justify-content: center;
-  align-content: center;
-}
 
-.previewContainer .imgcontainer .previewImage {
+.previewImage {
   width: 100%;
   height: 100%;
   object-fit: cover;

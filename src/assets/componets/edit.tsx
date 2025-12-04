@@ -144,22 +144,28 @@ export default function  Edit({recuerdo, handleClose, open,update} : NewMemoryPr
                             variant="outlined"
                             margin="dense"
                         />
-                        <Typography variant="h5" fontWeight="bold" fontFamily="cambria" align='left' sx={{mt:2}}>
-                            IMÁGEN PRINCIPAL 🖼️
-                        </Typography>
+                        
                         {/* 🔹 Vista previa de imagen principal */}
+                        
+
                         {form.url && (
-                        <div className="image-preview-container">
-                            <img src={form.url} alt="principal" className="image-preview" />
-                            <IconButton
-                            className="delete-icon"
-                            color="error"
-                            onClick={() => setForm({ ...form, url: "" })}
-                            >
-                            <DeleteIcon />
-                            </IconButton>
-                        </div>
-                            )}
+                            <>
+                            <Typography variant="h5" fontWeight="bold" fontFamily="cambria" align='left' sx={{mt:2}}>
+                                IMÁGEN PRINCIPAL 🖼️
+                            </Typography>
+
+                            <div className="image-preview-container">
+                                <img src={form.url} alt="principal" className="image-preview" />
+                                <IconButton
+                                className="delete-icon"
+                                color="error"
+                                onClick={() => setForm({ ...form, url: "" })}
+                                >
+                                <DeleteIcon />
+                                </IconButton>
+                            </div>
+                           </> 
+                        )}
 
                         <TextField
                             label="Imagenes adicionales (links separados por comas)"

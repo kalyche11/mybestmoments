@@ -118,7 +118,7 @@ const handleDeleteImage = (index: number) => {
                             margin="dense"
                         />
                         <TextField
-                            label="Imagen principal link"
+                            label="Imagen principal (link)"
                             name="url"
                             onChange={handleChange}
                             fullWidth
@@ -128,13 +128,11 @@ const handleDeleteImage = (index: number) => {
                         />
                         {form.url && (
                             <div className="previewContainer">
-                                <div className="imgcontainer">
                                     <img
                                     src={form.url}
                                     alt="Preview"
                                     className="previewImage"
                                 />
-                                </div>
                                 <IconButton
                                     className="delete-icon"
                                     color="error"
