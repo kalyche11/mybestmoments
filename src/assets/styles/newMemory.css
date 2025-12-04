@@ -79,28 +79,29 @@
   transform: scale(1.15);
 }
 
-/* 🔹 Contenedor principal de la imagen - CENTRADO PROFESIONAL */
+/* 🔹 Contenedor principal de la imagen - CENTRADO PERFECTO */
 .previewContainer {
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   width: 100%;
   max-width: 400px;
   margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-radius: 12px;
-  overflow: hidden;
-  min-height: 200px; /* Asegura altura mínima para mejor centrado */
+  overflow: visible;
 }
 
-/* Imagen principal */
+/* Imagen principal - CENTRADA */
 .previewContainer img.previewImage {
   display: block;
-  width: 100%;
+  max-width: 100%;
   height: auto;
   max-height: 400px;
   border-radius: 12px;
-  object-fit: contain; /* Cambiado de cover a contain para mejor centrado */
+  object-fit: contain;
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease;
 }
 
@@ -129,11 +130,10 @@
 /* Responsividad */
 @media (max-width: 600px) {
   .previewContainer {
-    max-width: 260px;
-    min-height: 150px;
+    max-width: 280px;
   }
   
   .previewContainer img.previewImage {
-    max-height: 300px;
+    max-height: 320px;
   }
 }
