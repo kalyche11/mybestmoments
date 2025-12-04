@@ -35,32 +35,7 @@
   }
 }
 
-.previewContainer .MuiIconButton-root {
-  margin: 0 !important;
-}
 
-
-.previewContainer {
-  position: relative;
-  display: inline-block;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.image-preview {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  border-radius: 12px;
-}
-
-.previewImage:hover {
-  transform: scale(1.02);
-}
 /* 🔹 Galería de imágenes adicionales */
 .gallery-preview {
   display: flex;
@@ -112,3 +87,54 @@
 }
 
 
+/* Contenedor principal de la imagen */
+.previewContainer {
+  position: relative; /* Contexto para el icono */
+  display: flex;      /* Para centrar horizontalmente */
+  justify-content: center;
+  align-items: center; /* Si quieres que también esté verticalmente centrado */
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;     /* Centrado horizontal del contenedor */
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Imagen principal */
+.previewContainer img.previewImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.previewContainer img.previewImage:hover {
+  transform: scale(1.02);
+}
+
+/* Icono de eliminar de la imagen principal */
+.previewContainer .delete-icon {
+  position: absolute; /* Posicionamiento sobre la imagen */
+  top: 8px;           /* Esquina superior */
+  right: 8px;
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-radius: 50%;
+  padding: 5px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  z-index: 10;        /* Por si acaso */
+}
+
+.previewContainer .delete-icon:hover {
+  background-color: #ffeaea !important;
+  transform: scale(1.15);
+}
+
+/* Responsividad */
+@media (max-width: 600px) {
+  .previewContainer {
+    max-width: 260px;
+  }
+}
