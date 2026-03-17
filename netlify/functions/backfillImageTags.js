@@ -43,7 +43,7 @@ const analyzeImages = async (allImages, meta, apiKey) => {
           {
             role: 'user',
             content: [
-              { type: 'text', text: `Analiza estas imágenes junto con estos datos: ${metaText}. Devuelve ÚNICAMENTE JSON válido con: image_tags (array de strings en minúsculas, máx. 10) e image_description (string en español, máx. 170 caracteres, resumen descriptivo completo). Ejemplo: {"image_tags":["playa","sol","familia"],"image_description":"Tarde familiar en la playa de Málaga al atardecer"}` },
+              { type: 'text', text: `Analiza estas imágenes junto con estos datos: ${metaText}. Devuelve ÚNICAMENTE JSON válido con: image_tags (array de strings en minúsculas, máx. 10) e image_description (string en español, máx. 200 caracteres, resumen descriptivo completo). Ejemplo: {"image_tags":["playa","sol","familia"],"image_description":"Tarde familiar en la playa de Málaga al atardecer"}` },
               ...imageContent
             ]
           }

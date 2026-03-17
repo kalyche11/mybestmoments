@@ -117,7 +117,17 @@ export const handler = async function(event, context) {
             messages: [
               {
                 role: 'user',
-                content: `Texto de búsqueda: "${searchText}"\n\nPuntúa cada recuerdo del 0 al 100 según su relevancia. Considera title, description, tags, location, date, image_tags e image_description.\nDevuelve ÚNICAMENTE un array JSON válido: [{"id":"...","score":0},...]\n\nRecuerdos:\n${JSON.stringify(compact)}`
+                content: `Texto de búsqueda: "${searchText}"
+
+Puntúa cada recuerdo del 1 al 100 según su relevancia con el texto de búsqueda. Reglas:
+- Compara semánticamente, no solo por coincidencia exacta.
+- Si una palabra del texto coincide parcialmente con tags, image_tags, title, description, location, date o image_description, asigna al menos 10 puntos.
+- Nunca asignes 0: el recuerdo más parecido debe recibir al menos 5.
+- Prioriza image_tags e image_description si hay relación visual.
+Devuelve ÚNICAMENTE un array JSON válido solo con id y score: [{"id":"...","score":50},...]
+
+Recuerdos:
+${JSON.stringify(compact)}`
               }
             ],
             max_tokens: 600,
@@ -177,9 +187,9 @@ export const handler = async function(event, context) {
       return { ...rec, score };
     });
 
-    // Ordenar descendente por score, top 5 con score > 0
+    // Ordenar descendente por score, siempre devolver top 5 (aunque el score sea bajo)
     const sortedByScore = scored.sort((a, b) => (b.score || 0) - (a.score || 0));
-    const top = sortedByScore.filter(r => (r.score || 0) > 0).slice(0, 5);
+    const top = sortedByScore.slice(0, 5);
 
     return {
       statusCode: 200,
