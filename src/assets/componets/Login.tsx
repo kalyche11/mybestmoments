@@ -22,7 +22,6 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-    console.log("REspuestas",response);
 
     const result = await response.json();
 
@@ -31,7 +30,7 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
       localStorage.setItem("username", result.username);
       navigate("/grillete");
     } else {
-      setError("¿Cómo llegaste a esta página bro?. ¡Get the fuck up, BITCH!");
+      setError("❌ Credenciales incorrectas. Intenta de nuevo.");
     }
   } catch (err) {
     setError(`❌ Error de red. Intenta de nuevo. ${err}`);

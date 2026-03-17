@@ -40,10 +40,20 @@ export function searchFilter(recuerdos, input) {
   );
 }
 
-export const updateFavorite = async (recuerdos, id) => {
+export const updateFavorite = async (id) => {
   const res = await fetch("/.netlify/functions/updateFavorite", {
     method: "PUT",
-    body: JSON.stringify({ recuerdos, id }),
+    body: JSON.stringify({ id }),
   });
   return res.ok;
+};
+
+// Migración única: rellena image_tags en todos los recuerdos que no los tengan.
+// Llamar desde la consola del navegador o desde un botón de admin:
+//   import { backfillImageTags } from './services/api'; backfillImageTags();
+export const backfillImageTags = async () => {
+  const res = await fetch("/.netlify/functions/backfillImageTags", {
+    method: "POST",
+  });
+  return res.json();
 };

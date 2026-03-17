@@ -6,11 +6,12 @@ import { motion } from 'framer-motion';
 import '../styles/grillete.css';
 import Buscar from './filter'; 
 import Loader from './loader';
+import SpeechToText from './SpeechToText.js';
 import NewMemoryButton from './newMemoryButton';
 import NewMemory from './newMemory';
 import Edit from './edit';
 import Details from './details';
-import { getRecuerdos, updateFavorite } from '../services/api.js';
+import { getRecuerdos, updateFavorite, backfillImageTags } from '../services/api.js';
 import { Navigate,useNavigate } from 'react-router-dom';
 import Footer from './Footer';
 
@@ -21,6 +22,8 @@ import Footer from './Footer';
 
   const [RECUERDOS, setRecuerdos] = useState<any[]>([]);
   const [ALL_RECUERDOS, setAllRecuerdos] = useState<any[]>([]);
+  const [originalRecuerdos, setOriginalRecuerdos] = useState<any[]>([]);
+  const [filteredActive, setFilteredActive] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedRecuerdo, setSelectedRecuerdo] = useState<any>(null);
   const [showEdit, setShowEdit] = useState(false);
@@ -30,6 +33,27 @@ import Footer from './Footer';
   const [actualizando, setactualizando] = useState(false);
   const [showLoadder, setShowLoader] = useState(false); // Changed initial state
   const [searchTerm, setSearchTerm] = useState(''); // New state
+  const [backfilling, setBackfilling] = useState(false);
+  const [backfillMsg, setBackfillMsg] = useState('');
+
+  const handleBackfill = async () => {
+    setBackfilling(true);
+    setBackfillMsg('');
+    try {
+      const res = await backfillImageTags();
+      if (res.updated === 0) {
+        setBackfillMsg('✓ Todos los recuerdos ya tienen etiquetas');
+      } else {
+        setBackfillMsg(`✓ ${res.updated} recuerdo(s) actualizados`);
+        setUpdate(prev => !prev); // recargar recuerdos
+      }
+    } catch {
+      setBackfillMsg('✗ Error al procesar imágenes');
+    } finally {
+      setBackfilling(false);
+      setTimeout(() => setBackfillMsg(''), 4000);
+    }
+  };
 
   useEffect(() => {
     const verifySession = async () => {
@@ -69,6 +93,7 @@ import Footer from './Footer';
       setactualizando(true);
       const recuerdos = await getRecuerdos();
       setAllRecuerdos(recuerdos);
+      setOriginalRecuerdos(recuerdos);
       setactualizando(false);
     };
     fetchRecuerdos();
@@ -81,7 +106,7 @@ import Footer from './Footer';
     return ALL_RECUERDOS.filter(
       (item) =>
         item.location.toLowerCase().includes(term) ||
-        (item.tags && item.tags.some((tag) => tag.toLowerCase().includes(term)))
+        (item.tags && item.tags.some((tag: string) => tag.toLowerCase().includes(term)))
     );
   }, [ALL_RECUERDOS, searchTerm]);
 
@@ -100,7 +125,7 @@ import Footer from './Footer';
 
 
   const toggleFavorite = async (id: string | number) => {
-    await updateFavorite(ALL_RECUERDOS, id);
+    await updateFavorite(id);
     setUpdate((prev) => !prev);
   };
 
@@ -132,17 +157,40 @@ import Footer from './Footer';
   if (!valid) return <Navigate to="/login" />;
 
   return (
-    <Box className="grilla-container">
+    <>
+      {/* Backfill button — fixed, completely outside the layout tree */}
+      <div className="backfill-float-group">
+        <button
+          className={`backfill-btn${backfilling ? ' backfilling' : ''}`}
+          onClick={handleBackfill}
+          disabled={backfilling}
+          title="Analizar imágenes sin etiquetas (backfill)"
+        >
+          {backfilling ? (
+            <span className="backfill-spinner" />
+          ) : (
+            <span className="backfill-icon">🔨</span>
+          )}
+        </button>
+        {backfillMsg && <span className="backfill-msg">{backfillMsg}</span>}
+      </div>
+      <Box className="grilla-container">
       <Box className="grilla-content">
         <Box className="header">
           <Typography variant="h3" className="header-title">
-            Tus mejores momentos, {username}
+            suas melhores lembranças, {username}
           </Typography>
 
           <Box className="header-actions">
             <Buscar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             {RECUERDOS.length > 0 && (
               <NewMemoryButton handleClick={() => setShowNewMemory(true)} />
+            )}
+            <SpeechToText setAllRecuerdos={setAllRecuerdos} setFilteredActive={setFilteredActive} /> {/* New component for voice search */}
+            {filteredActive && (
+              <Button variant="contained" className="new-memory-button show-all-button" onClick={() => { setAllRecuerdos(originalRecuerdos); setFilteredActive(false); }}>
+                Mostrar todos
+              </Button>
             )}
           </Box>
         </Box>
@@ -240,5 +288,6 @@ import Footer from './Footer';
       {showLoadder && <Loader setPageNumber={handleLoadMore} />}
       <Footer />
     </Box>
+    </>
   );
 }

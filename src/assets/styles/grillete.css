@@ -1,5 +1,86 @@
 /* --- Loading, Empty, and Error States --- */
- 
+
+/* Backfill hammer button — strictly fixed, outside layout tree */
+.backfill-float-group {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+/* On mobile: hide the text message, show only icon */
+@media (max-width: 600px) {
+  .backfill-msg {
+    display: none;
+  }
+}
+
+.backfill-btn {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.backfill-btn:hover:not(:disabled) {
+  transform: scale(1.12);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+
+.backfill-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.backfill-btn.backfilling {
+  animation: hammering 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes hammering {
+  from { transform: rotate(-15deg) scale(1.05); }
+  to   { transform: rotate(10deg) scale(1.05); }
+}
+
+.backfill-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.backfill-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.backfill-msg {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+
 /* This container will be centered on the screen */
 .loading-container {
   position: absolute;

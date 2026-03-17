@@ -1,6 +1,19 @@
 [build]
   functions = "netlify/functions"
 
+[functions]
+  # Timeout extendido para backfill: analizar imágenes con OpenAI puede tardar varios segundos por recuerdo
+  node_bundler = "esbuild"
+
+[functions.backfillImageTags]
+  timeout = 300
+
+[dev]
+  command = "npm run dev"
+  targetPort = 5173
+  port = 8888
+  autoLaunch = false
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

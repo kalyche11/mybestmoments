@@ -7,39 +7,47 @@ export const handler = async function(event, context) {
 
   const { VITE_BIN_ID, VITE_MASTER_KEY } = process.env;
   const BASE_URL = `https://api.jsonbin.io/v3/b/${VITE_BIN_ID}`;
-  const { recuerdos, id } = JSON.parse(event.body);
+  const { id } = JSON.parse(event.body);
 
   try {
-    const actualizado = recuerdos.map((item) =>
+    // Leer siempre desde el bin para no perder campos como image_tags / image_description
+    const resGet = await fetch(`${BASE_URL}/latest`, {
+      headers: { 'X-Master-Key': VITE_MASTER_KEY }
+    });
+    if (!resGet.ok) {
+      return { statusCode: 502, body: JSON.stringify({ message: 'Error al obtener recuerdos' }) };
+    }
+    const data = await resGet.json();
+
+    const actualizado = data.record.map((item) =>
       item.id === id ? { ...item, favorite: !item.favorite } : item
     );
 
     const resPut = await fetch(BASE_URL, {
-        method: "PUT", 
+        method: 'PUT',
         headers: {
-            "Content-Type": "application/json",
-            "X-Master-Key": VITE_MASTER_KEY
+            'Content-Type': 'application/json',
+            'X-Master-Key': VITE_MASTER_KEY
         },
         body: JSON.stringify(actualizado)
     });
 
-    if(resPut.ok){
+    if (resPut.ok) {
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: "Favorite updated" })
+            body: JSON.stringify({ message: 'Favorite updated' })
         };
-    }
-    else{
+    } else {
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: "Something went wrong" })
+            body: JSON.stringify({ message: 'Something went wrong' })
         };
     }
 
   } catch {
       return {
           statusCode: 500,
-          body: JSON.stringify({ message: "Something went wrong" })
+          body: JSON.stringify({ message: 'Something went wrong' })
       };
   }
 };

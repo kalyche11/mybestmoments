@@ -8,5 +8,14 @@ export default defineConfig({
     alias: {
       '@mui/styled-engine': '@mui/styled-engine-sc'
     }
+  },
+  server: {
+    proxy: {
+      '/.netlify/functions': {
+        target: 'http://localhost:9999',
+        changeOrigin: true,
+        rewrite: (path) => path.replace('/.netlify/functions', '')
+      }
+    }
   }
 })
