@@ -168,7 +168,7 @@ const SpeechToText: React.FC<Props> = ({ setAllRecuerdos, setFilteredActive }) =
             </div>
 
             <div className="stt-transcript" aria-live="polite">
-              {transcript || <em className="stt-placeholder">Una joven tirada en el suelo de caracoli... 😆</em>}
+              {transcript || <em className="stt-placeholder">Una joven tirada en el suelo de noche... 😆</em>}
             </div>
 
             {searching ? (

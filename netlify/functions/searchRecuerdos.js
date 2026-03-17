@@ -105,6 +105,7 @@ export const handler = async function(event, context) {
           description: r.description || '',
           tags: r.tags || [],
           location: r.location || '',
+          date: r.date || '',
           image_tags: r.image_tags || [],
           image_description: r.image_description || ''
         }));
@@ -116,7 +117,7 @@ export const handler = async function(event, context) {
             messages: [
               {
                 role: 'user',
-                content: `Texto de búsqueda: "${searchText}"\n\nPuntúa cada recuerdo del 0 al 100 según su relevancia. Considera title, description, tags, location, image_tags e image_description.\nDevuelve ÚNICAMENTE un array JSON válido: [{"id":"...","score":0},...]\n\nRecuerdos:\n${JSON.stringify(compact)}`
+                content: `Texto de búsqueda: "${searchText}"\n\nPuntúa cada recuerdo del 0 al 100 según su relevancia. Considera title, description, tags, location, date, image_tags e image_description.\nDevuelve ÚNICAMENTE un array JSON válido: [{"id":"...","score":0},...]\n\nRecuerdos:\n${JSON.stringify(compact)}`
               }
             ],
             max_tokens: 600,
@@ -152,7 +153,9 @@ export const handler = async function(event, context) {
         const recTitle = normalize(rec.title || '');
         const recDesc = normalize(rec.description || '');
         const recLoc = normalize(rec.location || '');
+        const recDate = normalize(rec.date || '');
         const imageTags = Array.isArray(rec.image_tags) ? rec.image_tags.map(normalize) : [];
+        const imageDesc = normalize(rec.image_description || '');
         score = 0;
         tagTerms.forEach(t => {
           if (!t) return;
@@ -160,17 +163,23 @@ export const handler = async function(event, context) {
           if (recTitle.includes(t)) score += 3;
           if (recDesc.includes(t)) score += 2;
           if (imageTags.includes(t)) score += 4;
+          if (imageDesc.includes(t)) score += 3;
+          if (recDate.includes(t)) score += 2;
         });
         titleTerms.forEach(t => { if (t && recTitle.includes(t)) score += 4; });
-        descTerms.forEach(t => { if (t && recDesc.includes(t)) score += 2; });
+        descTerms.forEach(t => {
+          if (!t) return;
+          if (recDesc.includes(t)) score += 2;
+          if (imageDesc.includes(t)) score += 2;
+        });
         locTerms.forEach(t => { if (t && recLoc.includes(t)) score += 3; });
       }
       return { ...rec, score };
     });
 
-    // Ordenar descendente por score, top 3 con score > 0
+    // Ordenar descendente por score, top 5 con score > 0
     const sortedByScore = scored.sort((a, b) => (b.score || 0) - (a.score || 0));
-    const top = sortedByScore.filter(r => (r.score || 0) > 0).slice(0, 3);
+    const top = sortedByScore.filter(r => (r.score || 0) > 0).slice(0, 5);
 
     return {
       statusCode: 200,
