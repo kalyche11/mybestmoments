@@ -33,3 +33,110 @@
   scrollbar-width: thin;
   scrollbar-color: #555 #2c2c2c;
 }
+
+/* ============================================================
+   Dark Modal Theme (shared by NewMemory, Edit, Details)
+   Reference: SpeechToText modal style
+   ============================================================ */
+
+/* Overlay backdrop */
+.dark-modal .MuiBackdrop-root {
+  background: rgba(10,11,13,0.6) !important;
+}
+
+/* Paper (modal card) */
+.dark-modal .MuiPaper-root {
+  background: linear-gradient(180deg, #0f1724, #071028) !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  box-shadow: 0 20px 60px rgba(2,6,23,0.6) !important;
+  color: #f5f6fa !important;
+}
+
+/* Title */
+.dark-modal .MuiDialogTitle-root {
+  color: #fff !important;
+}
+
+/* Content area */
+.dark-modal .MuiDialogContent-root {
+  color: #e2e8f0 !important;
+}
+
+/* Input fields — dark styled */
+.dark-modal .MuiOutlinedInput-root {
+  color: #f1f5f9 !important;
+  background: rgba(255,255,255,0.04) !important;
+  border-radius: 10px !important;
+}
+
+.dark-modal .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255,255,255,0.10) !important;
+}
+
+.dark-modal .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255,255,255,0.20) !important;
+}
+
+.dark-modal .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #ff8a00 !important;
+}
+
+/* Labels */
+.dark-modal .MuiInputLabel-root {
+  color: #94a3b8 !important;
+}
+
+.dark-modal .MuiInputLabel-root.Mui-focused {
+  color: #ff8a00 !important;
+}
+
+/* Action buttons */
+.dark-modal .MuiDialogActions-root {
+  padding: 16px 24px !important;
+}
+
+.dark-modal .MuiButton-containedPrimary {
+  background: linear-gradient(90deg, #ff8a00, #e52e71) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  box-shadow: 0 4px 16px rgba(229,46,113,0.25) !important;
+  border: none !important;
+}
+
+.dark-modal .MuiButton-containedPrimary:hover {
+  box-shadow: 0 6px 22px rgba(229,46,113,0.35) !important;
+}
+
+.dark-modal .MuiButton-outlinedSecondary {
+  color: #cbd5e1 !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  border-radius: 10px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+}
+
+.dark-modal .MuiButton-outlinedSecondary:hover {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.20) !important;
+}
+
+.dark-modal .MuiButton-containedError {
+  background: #dc2626 !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+}
+
+/* Loading overlay inside dark modal */
+.dark-modal .padreLoading {
+  background-color: rgba(10,11,13,0.5);
+}
+
+/* Typography overrides */
+.dark-modal .MuiTypography-root {
+  color: #fff !important;
+}

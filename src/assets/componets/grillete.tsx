@@ -7,7 +7,6 @@ import '../styles/grillete.css';
 import Buscar from './filter'; 
 import Loader from './loader';
 import SpeechToText from './SpeechToText.js';
-import NewMemoryButton from './newMemoryButton';
 import NewMemory from './newMemory';
 import Edit from './edit';
 import Details from './details';
@@ -35,6 +34,7 @@ import Footer from './Footer';
   const [searchTerm, setSearchTerm] = useState(''); // New state
   const [backfilling, setBackfilling] = useState(false);
   const [backfillMsg, setBackfillMsg] = useState('');
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   const handleBackfill = async () => {
     setBackfilling(true);
@@ -158,22 +158,6 @@ import Footer from './Footer';
 
   return (
     <>
-      {/* Backfill button — fixed, completely outside the layout tree */}
-      <div className="backfill-float-group">
-        <button
-          className={`backfill-btn${backfilling ? ' backfilling' : ''}`}
-          onClick={handleBackfill}
-          disabled={backfilling}
-          title="Analizar imágenes sin etiquetas (backfill)"
-        >
-          {backfilling ? (
-            <span className="backfill-spinner" />
-          ) : (
-            <span className="backfill-icon">🔨</span>
-          )}
-        </button>
-        {backfillMsg && <span className="backfill-msg">{backfillMsg}</span>}
-      </div>
       <Box className="grilla-container">
       <Box className="grilla-content">
         <Box className="header">
@@ -183,15 +167,44 @@ import Footer from './Footer';
 
           <Box className="header-actions">
             <Buscar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-            {RECUERDOS.length > 0 && (
-              <NewMemoryButton handleClick={() => setShowNewMemory(true)} />
-            )}
-            <SpeechToText setAllRecuerdos={setAllRecuerdos} setFilteredActive={setFilteredActive} /> {/* New component for voice search */}
-            {filteredActive && (
-              <Button variant="contained" className="new-memory-button show-all-button" onClick={() => { setAllRecuerdos(originalRecuerdos); setFilteredActive(false); }}>
-                Mostrar todos
-              </Button>
-            )}
+            <div className="tools-accordion">
+              <button className="tools-toggle" onClick={() => setToolsOpen(prev => !prev)}>
+                <span className={`tools-chevron${toolsOpen ? ' open' : ''}`}>&#9662;</span>
+                Ferramentas
+              </button>
+              <div className={`tools-panel${toolsOpen ? ' open' : ''}`}>
+                {RECUERDOS.length > 0 && (
+                  <button className="tools-item" onClick={() => { setShowNewMemory(true); setToolsOpen(false); }}>
+                    <span className="tools-item-icon">✨</span>
+                    <span className="tools-item-label">Nuevo recuerdo</span>
+                  </button>
+                )}
+                <div className="tools-item tools-item-stt">
+                  <SpeechToText setAllRecuerdos={setAllRecuerdos} setFilteredActive={setFilteredActive} />
+                </div>
+                <div className="tools-divider" />
+                <button
+                  className={`tools-item${backfilling ? ' backfilling' : ''}`}
+                  onClick={handleBackfill}
+                  disabled={backfilling}
+                >
+                  <span className="tools-item-icon">{backfilling ? '' : '🔨'}</span>
+                  <span className="tools-item-label">
+                    {backfilling ? 'Procesando...' : backfillMsg || 'Analizar imágenes'}
+                  </span>
+                  {backfilling && <span className="backfill-spinner" />}
+                </button>
+                {filteredActive && (
+                  <>
+                    <div className="tools-divider" />
+                    <button className="tools-item" onClick={() => { setAllRecuerdos(originalRecuerdos); setFilteredActive(false); setToolsOpen(false); }}>
+                      <span className="tools-item-icon">👁</span>
+                      <span className="tools-item-label">Mostrar todos</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </Box>
         </Box>
 

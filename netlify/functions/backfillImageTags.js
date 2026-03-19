@@ -43,12 +43,12 @@ const analyzeImages = async (allImages, meta, apiKey) => {
           {
             role: 'user',
             content: [
-              { type: 'text', text: `Analiza estas imágenes junto con estos datos: ${metaText}. Devuelve ÚNICAMENTE JSON válido con: image_tags (array de strings en minúsculas, máx. 10) e image_description (string en español, máx. 200 caracteres, resumen descriptivo completo). Ejemplo: {"image_tags":["playa","sol","familia"],"image_description":"Tarde familiar en la playa de Málaga al atardecer"}` },
+              { type: 'text', text: `Analiza TODAS estas imágenes (no solo la primera) junto con estos datos: ${metaText}. Devuelve ÚNICAMENTE JSON válido con: image_tags (array de strings en minúsculas, máx. 20, debe cubrir detalles visuales de TODAS las imágenes: colores, objetos, accesorios, ropa, emociones, entorno) e image_description (string en español, máx. 300 caracteres, describe detalles visuales específicos de CADA imagen separados por punto y coma). Ejemplo: {"image_tags":["playa","collar blanco","vestido azul","cubetas rojas","arena","atardecer"],"image_description":"Mujer con collar blanco y vestido azul sonriendo en playa; niños jugando con cubetas rojas en arena; atardecer naranja sobre mar turquesa con palmeras"}` },
               ...imageContent
             ]
           }
         ],
-        max_tokens: 300,
+        max_tokens: 400,
         temperature: 0
       })
     });
@@ -64,7 +64,7 @@ const analyzeImages = async (allImages, meta, apiKey) => {
     console.log('  ← Parsed:', JSON.stringify(parsed));
     const result = {
       image_tags: Array.isArray(parsed.image_tags) ? parsed.image_tags.map(t => t.toString().toLowerCase()) : [],
-      image_description: typeof parsed.image_description === 'string' ? parsed.image_description.slice(0, 60) : ''
+      image_description: typeof parsed.image_description === 'string' ? parsed.image_description.slice(0, 300) : ''
     };
     console.log('  ← Result:', JSON.stringify(result));
     return result;

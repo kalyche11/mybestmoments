@@ -35,25 +35,28 @@ export default function Details({ recuerdo, closeDetailGrid }) {
           <div className="detailsInnerBackdrop">
             <div className="image-container">
               {allImages.length > 0 ? (
-                <>
-                  <IconButton onClick={goBackImage} disabled={!showPrev} className="arrow-button left">
-                    <ArrowBackIosIcon />
-                  </IconButton>
-                  <img
-                    src={currentImage}
-                    alt={title}
-                    className="details-image"
-                  />
-                  <IconButton onClick={goNextImage} disabled={!showNext} className="arrow-button right">
-                    <ArrowForwardIcon />
-                  </IconButton>
-                </>
+                <img
+                  src={currentImage}
+                  alt={title}
+                  className="details-image"
+                />
               ) : (
                 <div className="loading-container">
                   <div className="loading"></div>
                 </div>
               )}
             </div>
+
+            {allImages.length > 1 && (
+              <>
+                <IconButton onClick={goBackImage} disabled={!showPrev} className="arrow-button left">
+                  <ArrowBackIosIcon />
+                </IconButton>
+                <IconButton onClick={goNextImage} disabled={!showNext} className="arrow-button right">
+                  <ArrowForwardIcon />
+                </IconButton>
+              </>
+            )}
 
             
               <h2 className="details-title">{title}</h2>

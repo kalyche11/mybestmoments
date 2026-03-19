@@ -1,197 +1,199 @@
-// Serverless function: recibe texto, pide a OpenAI extraer tags/title/description/location
-// y filtra los recuerdos almacenados en el JSON bin. Variables de entorno requeridas:
-// - OPENAI_API_KEY
-// - VITE_BIN_ID
-// - VITE_MASTER_KEY
+// searchRecuerdos.js
+// Búsqueda en 2 fases:
+//   Fase 1 — Clasificador binario liviano: payload compacto → IA dice sí/no por cada recuerdo
+//   Fase 2 — Scoring profundo: solo los candidatos aprobados → IA puntúa 0-100
+// Variables de entorno: OPENAI_API_KEY, VITE_BIN_ID, VITE_MASTER_KEY
 
-export const handler = async function(event, context) {
+const callOpenAI = async (messages, apiKey, maxTokens = 400) => {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: maxTokens, temperature: 0 })
+  });
+  if (!res.ok) { console.warn('OpenAI error:', await res.text()); return null; }
+  const json = await res.json();
+  return json?.choices?.[0]?.message?.content || '';
+};
+
+const parseJSONArray = (text) => {
+  const bracket = text.indexOf('[');
+  if (bracket < 0) return null;
+  // Encontrar cierre correspondiente
+  let depth = 0, end = -1;
+  for (let i = bracket; i < text.length; i++) {
+    if (text[i] === '[') depth++;
+    else if (text[i] === ']') { depth--; if (depth === 0) { end = i; break; } }
+  }
+  if (end < 0) return null;
+  try { return JSON.parse(text.slice(bracket, end + 1)); } catch { return null; }
+};
+
+export const handler = async function(event) {
   try {
     const { OPENAI_API_KEY, VITE_BIN_ID, VITE_MASTER_KEY } = process.env;
     const openaiAvailable = Boolean(OPENAI_API_KEY && OPENAI_API_KEY.length > 10);
-    if (!openaiAvailable) {
-      console.warn('OPENAI_API_KEY no configurada — usando modo heurístico/mock para desarrollo');
-    }
 
     const body = event.body ? JSON.parse(event.body) : {};
-    const { text = '', filters = { tags: true, title: true, description: true, location: true } } = body;
-
+    const { text = '' } = body;
     if (!text || text.trim().length === 0) {
       return { statusCode: 400, body: JSON.stringify({ message: 'Texto vacío' }) };
     }
 
-    // Llamada a OpenAI para extraer entidades relevantes en formato JSON
-    const systemPrompt = `Eres un extractor. Devuelve sólo JSON con las claves: tags (array de strings), title_terms (array), description_terms (array), location_terms (array).`;
-    const userPrompt = `Extrae de este texto las etiquetas (tags), palabras clave de título, ideas clave de la descripción y localizaciones relevantes. Responde únicamente con JSON válido. Texto:\n\n"""${text.replace(/\"/g,'\\\"')}"""`;
+    // ── Obtener recuerdos del JSON bin ──
+    const BASE_URL = `https://api.jsonbin.io/v3/b/${VITE_BIN_ID}`;
+    const resBin = await fetch(`${BASE_URL}/latest`, { headers: { 'X-Master-Key': VITE_MASTER_KEY } });
+    if (!resBin.ok) {
+      return { statusCode: 502, body: JSON.stringify({ message: 'Error al obtener recuerdos' }) };
+    }
+    const bin = await resBin.json();
+    const records = Array.isArray(bin.record) ? bin.record : [];
+    if (!records.length) {
+      return { statusCode: 200, body: JSON.stringify({ results: [] }) };
+    }
 
-    let extracted = { tags: [], title_terms: [], description_terms: [], location_terms: [] };
+    // ══════════════════════════════════════════════
+    //  FASE 1 — Clasificador binario liviano
+    //  Payload compacto: solo id + campos clave
+    //  IA responde: ["id1","id2",...]
+    // ══════════════════════════════════════════════
+    let candidateIds = null;
+
     if (openaiAvailable) {
-      const oaRes = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          max_tokens: 300,
-          temperature: 0.2
-        })
-      });
+      const compact = records.map(r => ({
+        id: r.id,
+        tags: (r.tags || []).join(', '),
+        image_tags: (r.image_tags || []).join(', '),
+        image_description: r.image_description || '',
+        location: r.location || '',
+        date: r.date || '',
+        title: r.title || ''
+      }));
 
-      if (!oaRes.ok) {
-        const txt = await oaRes.text();
-        console.error('OpenAI error:', txt);
-        // fallback to heuristic instead of failing
-        console.warn('Fallo OpenAI — usando heurística');
-      } else {
-        const oaJson = await oaRes.json();
-        const content = oaJson?.choices?.[0]?.message?.content || '';
-        try {
-          const firstBrace = content.indexOf('{');
-          const jsonText = firstBrace >= 0 ? content.slice(firstBrace) : content;
-          extracted = JSON.parse(jsonText);
-        } catch (e) {
-          console.warn('No se pudo parsear JSON de OpenAI, intentando heurística');
+      console.log(`[Fase 1] Clasificando ${compact.length} recuerdos para: "${text}"`);
+
+      const phase1Content = await callOpenAI([{
+        role: 'user',
+        content: `Búsqueda del usuario: "${text}"
+
+Analiza semánticamente cada recuerdo y determina cuáles tienen relación con la búsqueda.
+Considera sinónimos, contexto y relaciones semánticas (ej: "playa" conecta con "océano", "arena", "costa").
+Devuelve ÚNICAMENTE un array JSON con los IDs de los recuerdos relevantes: ["id1","id2",...]
+Si ninguno es relevante, devuelve [].
+
+Recuerdos:
+${JSON.stringify(compact)}`
+      }], OPENAI_API_KEY, 300);
+
+      if (phase1Content) {
+        const ids = parseJSONArray(phase1Content);
+        if (Array.isArray(ids) && ids.length > 0) {
+          candidateIds = new Set(ids.map(String));
+          console.log(`[Fase 1] IA seleccionó ${candidateIds.size} candidatos:`, [...candidateIds]);
+        } else {
+          console.log('[Fase 1] IA no encontró candidatos relevantes');
+          return { statusCode: 200, body: JSON.stringify({ results: [] }) };
         }
       }
     }
 
-    // If OpenAI not used or parsing failed, use simple heuristic extraction
-    if (!extracted || (!extracted.tags?.length && !extracted.title_terms?.length && !extracted.description_terms?.length && !extracted.location_terms?.length)) {
+    // Si OpenAI no disponible → fallback heurístico para fase 1
+    if (candidateIds === null) {
+      const normalize = (s = '') => s.toString().toLowerCase();
       const words = text.toLowerCase().split(/[^a-záéíóúñ0-9]+/).filter(w => w.length > 2);
-      const freq = {};
-      words.forEach(w => { freq[w] = (freq[w]||0) + 1; });
-      const sorted = Object.keys(freq).sort((a,b)=>freq[b]-freq[a]).slice(0,8);
-      extracted = {
-        tags: sorted.slice(0,6),
-        title_terms: sorted.slice(0,4),
-        description_terms: sorted.slice(0,6),
-        location_terms: []
-      };
+      candidateIds = new Set();
+      for (const rec of records) {
+        const haystack = [
+          rec.title, rec.description, rec.location, rec.date,
+          ...(rec.tags || []), ...(rec.image_tags || []),
+          rec.image_description
+        ].map(normalize).join(' ');
+        if (words.some(w => haystack.includes(w))) {
+          candidateIds.add(String(rec.id));
+        }
+      }
+      console.log(`[Fase 1 heurística] ${candidateIds.size} candidatos de ${records.length}`);
+      if (candidateIds.size === 0) {
+        return { statusCode: 200, body: JSON.stringify({ results: [] }) };
+      }
     }
 
-    // Traer recuerdos (JSON bin)
-    const BASE_URL = `https://api.jsonbin.io/v3/b/${VITE_BIN_ID}`;
-    const res = await fetch(`${BASE_URL}/latest`, {
-      headers: { 'X-Master-Key': VITE_MASTER_KEY }
-    });
-    if (!res.ok) {
-      console.error('JSON Bin error', await res.text());
-      return { statusCode: 502, body: JSON.stringify({ message: 'Error al obtener recuerdos' }) };
+    // Filtrar solo los candidatos aprobados
+    const candidates = records.filter(r => candidateIds.has(String(r.id)));
+
+    // ══════════════════════════════════════════════
+    //  FASE 2 — Scoring profundo
+    //  Solo candidatos aprobados, datos completos
+    //  IA responde: [{"id":"...","score":85},...]
+    // ══════════════════════════════════════════════
+    let scoredResults = [];
+
+    if (openaiAvailable && candidates.length > 0) {
+      const full = candidates.map(r => ({
+        id: r.id,
+        title: r.title || '',
+        description: r.description || '',
+        tags: r.tags || [],
+        location: r.location || '',
+        date: r.date || '',
+        image_tags: r.image_tags || [],
+        image_description: r.image_description || ''
+      }));
+
+      console.log(`[Fase 2] Puntuando ${full.length} candidatos`);
+
+      const phase2Content = await callOpenAI([{
+        role: 'user',
+        content: `Búsqueda del usuario: "${text}"
+
+Puntúa cada recuerdo del 0 al 100 según su relevancia con la búsqueda.
+Considera TODOS los campos: title, description, tags, location, date, image_tags, image_description.
+Sé preciso: puntajes altos (≥60) solo si hay relación fuerte.
+Devuelve ÚNICAMENTE un array JSON con id y score: [{"id":"...","score":85},...]
+
+Recuerdos:
+${JSON.stringify(full)}`
+      }], OPENAI_API_KEY, 600);
+
+      if (phase2Content) {
+        const scores = parseJSONArray(phase2Content);
+        if (Array.isArray(scores)) {
+          const scoreMap = {};
+          scores.forEach(({ id, score }) => { scoreMap[String(id)] = Number(score) || 0; });
+          scoredResults = candidates.map(r => ({
+            ...r,
+            score: scoreMap[String(r.id)] !== undefined ? scoreMap[String(r.id)] : 0
+          }));
+          console.log(`[Fase 2] Scores:`, scores);
+        }
+      }
     }
-    const bin = await res.json();
-    const records = Array.isArray(bin.record) ? bin.record : [];
 
-    // Normalizar helpers
-    const normalize = (s='') => s.toString().toLowerCase();
-
-    // Prepare search terms from extracted
-    const tagTerms = (extracted.tags || []).map(t=>normalize(t));
-    const titleTerms = (extracted.title_terms || []).map(t=>normalize(t));
-    const descTerms = (extracted.description_terms || []).map(t=>normalize(t));
-    const locTerms = (extracted.location_terms || []).map(t=>normalize(t));
-
-    // Scoring con OpenAI: pasa el JSON completo de recuerdos para puntuar cada uno (0-100)
-    const scoreWithOpenAI = async (recs, searchText) => {
-      if (!openaiAvailable || !recs.length) return null;
-      try {
-        const compact = recs.map(r => ({
-          id: r.id,
-          title: r.title || '',
-          description: r.description || '',
-          tags: r.tags || [],
-          location: r.location || '',
-          date: r.date || '',
-          image_tags: r.image_tags || [],
-          image_description: r.image_description || ''
-        }));
-        const oaRes = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              {
-                role: 'user',
-                content: `Texto de búsqueda: "${searchText}"
-
-Puntúa cada recuerdo del 0 al 100 según su relevancia con el texto de búsqueda. Reglas:
-- Sé estricto: solo puntajes altos (>= 30) si hay coincidencia clara en tags, image_tags, title, description, location o image_description.
-- Si hay relación semántica débil, asigna entre 10 y 29.
-- Si no hay ninguna relación, asigna 0.
-- Compara semánticamente, no solo coincidencia exacta de palabras.
-- Prioriza image_tags e image_description para búsquedas visuales.
-Devuelve ÚNICAMENTE un array JSON válido solo con id y score: [{"id":"...","score":50},...]\n\nRecuerdos:\n${JSON.stringify(compact)}`
-              }
-            ],
-            max_tokens: 600,
-            temperature: 0
-          })
+    // Fallback heurístico para fase 2 si OpenAI falló
+    if (scoredResults.length === 0 && candidates.length > 0) {
+      const normalize = (s = '') => s.toString().toLowerCase();
+      const words = text.toLowerCase().split(/[^a-záéíóúñ0-9]+/).filter(w => w.length > 2);
+      scoredResults = candidates.map(rec => {
+        const haystack = [
+          rec.title, rec.description, rec.location, rec.date,
+          ...(rec.tags || []), ...(rec.image_tags || []),
+          rec.image_description
+        ].map(normalize).join(' ');
+        let score = 0;
+        words.forEach(w => {
+          const count = (haystack.match(new RegExp(w, 'g')) || []).length;
+          score += count * 5;
         });
-        if (!oaRes.ok) { console.warn('Scoring error:', await oaRes.text()); return null; }
-        const oaJson = await oaRes.json();
-        const content = oaJson?.choices?.[0]?.message?.content || '';
-        const bracket = content.indexOf('[');
-        const scoreArray = JSON.parse(bracket >= 0 ? content.slice(bracket) : content);
-        if (!Array.isArray(scoreArray)) return null;
-        const scoreMap = {};
-        scoreArray.forEach(({ id, score }) => { scoreMap[id] = Number(score) || 0; });
-        return scoreMap;
-      } catch (e) {
-        console.warn('scoreWithOpenAI error:', e.message);
-        return null;
-      }
-    };
+        return { ...rec, score };
+      });
+    }
 
-    // Puntuar todos los registros — OpenAI scoring con fallback heurístico
-    const scoreMap = await scoreWithOpenAI(records, text);
-
-    const scored = records.map(rec => {
-      let score;
-      if (scoreMap !== null) {
-        // Score asignado por OpenAI (0-100)
-        score = scoreMap[rec.id] !== undefined ? scoreMap[rec.id] : 0;
-      } else {
-        // Fallback: scoring heurístico local
-        const recTags = Array.isArray(rec.tags) ? rec.tags.map(normalize) : [];
-        const recTitle = normalize(rec.title || '');
-        const recDesc = normalize(rec.description || '');
-        const recLoc = normalize(rec.location || '');
-        const recDate = normalize(rec.date || '');
-        const imageTags = Array.isArray(rec.image_tags) ? rec.image_tags.map(normalize) : [];
-        const imageDesc = normalize(rec.image_description || '');
-        score = 0;
-        tagTerms.forEach(t => {
-          if (!t) return;
-          if (recTags.includes(t)) score += 5;
-          if (recTitle.includes(t)) score += 3;
-          if (recDesc.includes(t)) score += 2;
-          if (imageTags.includes(t)) score += 4;
-          if (imageDesc.includes(t)) score += 3;
-          if (recDate.includes(t)) score += 2;
-        });
-        titleTerms.forEach(t => { if (t && recTitle.includes(t)) score += 4; });
-        descTerms.forEach(t => {
-          if (!t) return;
-          if (recDesc.includes(t)) score += 2;
-          if (imageDesc.includes(t)) score += 2;
-        });
-        locTerms.forEach(t => { if (t && recLoc.includes(t)) score += 3; });
-      }
-      return { ...rec, score };
-    });
-
-    // Ordenar descendente por score, solo mostrar los que superen umbral mínimo de 15
-    const sortedByScore = scored.sort((a, b) => (b.score || 0) - (a.score || 0));
-    const top = sortedByScore.filter(r => (r.score || 0) >= 15).slice(0, 5);
+    // Ordenar y devolver top 5
+    scoredResults.sort((a, b) => (b.score || 0) - (a.score || 0));
+    const top = scoredResults.filter(r => (r.score || 0) > 0).slice(0, 5);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ extracted, results: top })
+      body: JSON.stringify({ results: top })
     };
 
   } catch (error) {

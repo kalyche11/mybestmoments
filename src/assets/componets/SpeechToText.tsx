@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import '../styles/speechToText.css';
 import '../styles/newMemoryButton.css';
 
@@ -139,11 +140,11 @@ const SpeechToText: React.FC<Props> = ({ setAllRecuerdos, setFilteredActive }) =
   return (
     <div className="speech-to-text">
       <button className="stt-open-btn new-memory-button" onClick={openModalAndStart} aria-haspopup="dialog">
-        🎤 Fala que eu lembro
+        🎤&emsp;Fala que eu lembro
       </button>
       
 
-      {showModal && (
+      {showModal && createPortal(
         <div className="stt-overlay" role="dialog" aria-modal="true" onClick={closeModal}>
           <div className="stt-modal" onClick={(e) => e.stopPropagation()}>
             <button className="stt-close" onClick={closeModal} aria-label="Cerrar">✕</button>
@@ -186,7 +187,8 @@ const SpeechToText: React.FC<Props> = ({ setAllRecuerdos, setFilteredActive }) =
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -108,7 +108,7 @@ export default function  Edit({recuerdo, handleClose, open,update} : NewMemoryPr
     }
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth >
+        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth className="dark-modal">
             
             <DialogTitle>
                 <Typography variant="h5" fontWeight="bold" align='center'>
