@@ -60,6 +60,41 @@ const analyzeImages = async (allImages, meta, apiKey) => {
   }
 };
 
+// ── Preprocesa un record para construir el texto que se embebe ───────────────
+const preprocessRecord = (r) => {
+  const parts = [
+    r.title             || '',
+    r.description       || '',
+    (r.tags             || []).join(' '),
+    r.location          || '',
+    r.image_description || '',
+    (r.image_tags       || []).join(' '),
+  ];
+  return parts.map(p => p.trim().toLowerCase()).filter(Boolean).join(' ');
+};
+
+// ── Genera embedding via text-embedding-3-small ──────────────────────────────
+// Retorna number[] o null si falla (nunca lanza excepción).
+const createEmbedding = async (text, apiKey) => {
+  if (!apiKey || !text) return null;
+  try {
+    const res = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: 'text-embedding-3-small', input: text }),
+    });
+    if (!res.ok) {
+      console.error('[embedding] HTTP error:', res.status, await res.text());
+      return null;
+    }
+    const json = await res.json();
+    return json?.data?.[0]?.embedding ?? null;
+  } catch (e) {
+    console.error('[embedding] Error:', e.message);
+    return null;
+  }
+};
+
 export const handler = async function(event) {
   if (event.httpMethod !== 'PUT') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -89,13 +124,39 @@ export const handler = async function(event) {
       updatedVisionData = await analyzeImages(allImages, meta, OPENAI_API_KEY);
     }
 
+    // ── Recalcular embedding si cambiaron campos semánticos ───────────────────
+    // Se dispara si: faltan campos de texto, cambió algún campo semántico,
+    // o se acaban de regenerar image_tags/image_description.
+    const missingEmbedding = !existing?.embedding || !Array.isArray(existing.embedding) || existing.embedding.length === 0;
+    const textFieldsChanged =
+      (recuerdo.title       !== undefined && recuerdo.title       !== existing?.title)       ||
+      (recuerdo.description !== undefined && recuerdo.description !== existing?.description) ||
+      (recuerdo.location    !== undefined && recuerdo.location    !== existing?.location)    ||
+      JSON.stringify(recuerdo.tags ?? existing?.tags ?? []) !== JSON.stringify(existing?.tags ?? []);
+
+    let updatedEmbedding;
+    if (missingEmbedding || textFieldsChanged || updatedVisionData !== undefined) {
+      // Fusionar campos para tener el texto más actualizado posible antes de embeber.
+      const mergedForEmbedding = { ...existing, ...recuerdo };
+      if (updatedVisionData !== undefined) {
+        mergedForEmbedding.image_tags        = updatedVisionData.image_tags;
+        mergedForEmbedding.image_description = updatedVisionData.image_description;
+      }
+      const embeddingText = preprocessRecord(mergedForEmbedding);
+      updatedEmbedding = await createEmbedding(embeddingText, OPENAI_API_KEY);
+      console.log('[actualizarRecuerdo] Embedding recalculado:', !!updatedEmbedding);
+      // Si OpenAI falla, updatedEmbedding queda null → se conserva el embedding anterior.
+    }
+
     const actualizado = data.record.map((item) => {
       if (item.id !== id) return item;
       const merged = { ...item, ...recuerdo };
       if (updatedVisionData !== undefined) {
-        merged.image_tags = updatedVisionData.image_tags;
+        merged.image_tags        = updatedVisionData.image_tags;
         merged.image_description = updatedVisionData.image_description;
       }
+      // Solo sobrescribir embedding si se generó uno nuevo válido.
+      if (updatedEmbedding) merged.embedding = updatedEmbedding;
       return merged;
     });
 

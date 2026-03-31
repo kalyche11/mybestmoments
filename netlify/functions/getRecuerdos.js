@@ -21,7 +21,13 @@ export const handler = async function(event, context) {
 
     const data = await res.json();
 
-    const sortedData = data.record.sort((a, b) => b.favorite - a.favorite);
+    // Excluir el campo `embedding` de la respuesta al cliente.
+    // Los embeddings son arrays de 1536 floats; enviarlos al frontend
+    // inflaría innecesariamente el payload. Solo se usan server-side en searchRecuerdos.
+    const sortedData = data.record
+      .sort((a, b) => b.favorite - a.favorite)
+      .map(({ embedding: _emb, ...rest }) => rest);
+
     return {
       statusCode: 200,
       body: JSON.stringify(sortedData),

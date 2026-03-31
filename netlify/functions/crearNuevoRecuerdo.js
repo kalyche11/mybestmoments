@@ -61,6 +61,42 @@ const analyzeImages = async (allImages, meta, apiKey) => {
   }
 };
 
+// ── Preprocesa un record para construir el texto que se embebe ───────────────
+// Combina los campos más representativos y normaliza para consistencia.
+const preprocessRecord = (r) => {
+  const parts = [
+    r.title             || '',
+    r.description       || '',
+    (r.tags             || []).join(' '),
+    r.location          || '',
+    r.image_description || '',
+    (r.image_tags       || []).join(' '),
+  ];
+  return parts.map(p => p.trim().toLowerCase()).filter(Boolean).join(' ');
+};
+
+// ── Genera embedding via text-embedding-3-small ──────────────────────────────
+// Retorna number[] o null si falla (nunca lanza excepción).
+const createEmbedding = async (text, apiKey) => {
+  if (!apiKey || !text) return null;
+  try {
+    const res = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: 'text-embedding-3-small', input: text }),
+    });
+    if (!res.ok) {
+      console.error('[embedding] HTTP error:', res.status, await res.text());
+      return null;
+    }
+    const json = await res.json();
+    return json?.data?.[0]?.embedding ?? null;
+  } catch (e) {
+    console.error('[embedding] Error:', e.message);
+    return null;
+  }
+};
+
 export const handler = async function(event, context) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -81,18 +117,27 @@ export const handler = async function(event, context) {
   console.log('crearNuevoRecuerdo → vision result:', { image_tags, image_description: image_description?.slice(0, 80) });
   const recuerdoConTags = { ...nuevoRecuerdo, image_tags, image_description };
 
+  // ── Generar embedding semántico y persistirlo junto al recuerdo ─────────────
+  // Se hace después de analyzeImages para que image_tags e image_description
+  // queden incluidos en el texto que se embebe (mejora la calidad semántica).
+  const embeddingText = preprocessRecord(recuerdoConTags);
+  const embedding = await createEmbedding(embeddingText, OPENAI_API_KEY);
+  console.log('crearNuevoRecuerdo → embedding generado:', !!embedding);
+  // Si OpenAI falla, se guarda sin embedding; backfillEmbeddings.js lo completará.
+  const recuerdoFinal = embedding ? { ...recuerdoConTags, embedding } : recuerdoConTags;
+
   try {
     const resGet = await fetch(`${BASE_URL}/latest`, {
         headers: { "X-Master-Key": VITE_MASTER_KEY }
     });
     const data = await resGet.json();
-    const actualizado = [...data.record, recuerdoConTags];
+    const actualizado = [...data.record, recuerdoFinal];
 
     const resPatch = await fetch(BASE_URL, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-            "Content-Type": "application/json",
-            "X-Master-Key": VITE_MASTER_KEY
+            'Content-Type': 'application/json',
+            'X-Master-Key': VITE_MASTER_KEY
         },
         body: JSON.stringify(actualizado)
     });

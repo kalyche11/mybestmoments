@@ -1,3 +1,8 @@
+html, body {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  min-height: 100%;
+}
+
 .app-background {
   background-color: #f0f2f5; /* Gris azulado muy suave */
 }

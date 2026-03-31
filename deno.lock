@@ -30,6 +30,7 @@
         "npm:globals@^16.3.0",
         "npm:jsonwebtoken@^9.0.2",
         "npm:netlify@^24.2.0",
+        "npm:openai@^6.33.0",
         "npm:react-dom@^19.1.1",
         "npm:react-router-dom@^7.8.0",
         "npm:react@^19.1.1",
