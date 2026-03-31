@@ -12,7 +12,11 @@ export async function handler(event) {
 
     const { VITE_USER1, VITE_USER2, VITE_PASSWORD } = process.env;
 
+<<<<<<< HEAD
     if ((username === VITE_USER1 || username == VITE_USER2) && password === VITE_PASSWORD) {
+=======
+    if ((username === VITE_USER1 || username === VITE_USER2) && password === VITE_PASSWORD) {
+>>>>>>> e91e728 (refactoring searchRecuerdos.js to use embeddings)
       const token = jwt.sign({ username }, SECRET, { expiresIn: "2h" });
 
       return {

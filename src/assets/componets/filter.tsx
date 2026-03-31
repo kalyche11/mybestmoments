@@ -1,7 +1,7 @@
 import TextField from '@mui/material/TextField';
 
-export default function Buscar({ searchTerm, setSearchTerm }){
-  const handleFilterMemory = (e) => {
+export default function Buscar({ searchTerm, setSearchTerm }: { searchTerm: string, setSearchTerm: (value: string) => void }){
+  const handleFilterMemory = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   }
 

@@ -106,7 +106,10 @@ import Footer from './Footer';
     return ALL_RECUERDOS.filter(
       (item) =>
         item.location.toLowerCase().includes(term) ||
-        (item.tags && item.tags.some((tag: string) => tag.toLowerCase().includes(term)))
+        (item.tags && item.tags.some((tag: string) => tag.toLowerCase().includes(term))) ||
+        item.title.toLowerCase().includes(term) ||
+        (item.description && item.description.toLowerCase().includes(term)) ||
+        (item.image_description && item.image_description.toLowerCase().includes(term))
     );
   }, [ALL_RECUERDOS, searchTerm]);
 
