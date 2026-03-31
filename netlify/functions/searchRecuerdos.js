@@ -81,8 +81,10 @@ const textFallbackSearch = (records, query) => {
       const haystack = preprocessRecord(rec);
       let score = 0;
       words.forEach(w => {
-        const matches = haystack.match(new RegExp(w, 'g'));
+        const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const matches = haystack.match(new RegExp(escaped, 'g'));
         if (matches) score += matches.length;
+        if (rec.title && rec.title.toLowerCase().includes(w)) score += 2; // Bonus si la palabra está en el título
       });
       return { ...rec, score };
     })
