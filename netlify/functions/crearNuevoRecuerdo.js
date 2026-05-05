@@ -1,4 +1,6 @@
 
+import { saveEmbeddingToSupabase } from './supabaseClient.js';
+
 // Extrae el primer bloque JSON de un string (maneja markdown ```json ... ```)
 const extractJSON = (text) => {
   const stripped = text.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim();
@@ -103,6 +105,9 @@ export const handler = async function(event, context) {
   }
 
   const { VITE_BIN_ID, VITE_MASTER_KEY, OPENAI_API_KEY } = process.env;
+  if (!VITE_BIN_ID || !VITE_MASTER_KEY) {
+    return { statusCode: 500, body: JSON.stringify({ message: 'Variables de JSONBin no configuradas' }) };
+  }
   const BASE_URL = `https://api.jsonbin.io/v3/b/${VITE_BIN_ID}`;
   const nuevoRecuerdo = JSON.parse(event.body);
 
@@ -117,21 +122,36 @@ export const handler = async function(event, context) {
   console.log('crearNuevoRecuerdo → vision result:', { image_tags, image_description: image_description?.slice(0, 80) });
   const recuerdoConTags = { ...nuevoRecuerdo, image_tags, image_description };
 
-  // ── Generar embedding semántico y persistirlo junto al recuerdo ─────────────
-  // Se hace después de analyzeImages para que image_tags e image_description
-  // queden incluidos en el texto que se embebe (mejora la calidad semántica).
+  // ── Generar embedding semántico y guardar solo en Supabase ─────────────
+  // El JSONBin debe almacenar solo el recuerdo, no el vector enorme.
   const embeddingText = preprocessRecord(recuerdoConTags);
   const embedding = await createEmbedding(embeddingText, OPENAI_API_KEY);
   console.log('crearNuevoRecuerdo → embedding generado:', !!embedding);
-  // Si OpenAI falla, se guarda sin embedding; backfillEmbeddings.js lo completará.
-  const recuerdoFinal = embedding ? { ...recuerdoConTags, embedding } : recuerdoConTags;
+  const recuerdoFinal = recuerdoConTags;
+
+  if (embedding) {
+    try {
+      await saveEmbeddingToSupabase(recuerdoFinal.id, embedding);
+      console.log('crearNuevoRecuerdo → embedding guardado en Supabase para memory_id:', recuerdoFinal.id);
+    } catch (err) {
+      console.error('crearNuevoRecuerdo → falló guardar embedding en Supabase:', err.message);
+    }
+  }
 
   try {
     const resGet = await fetch(`${BASE_URL}/latest`, {
         headers: { "X-Master-Key": VITE_MASTER_KEY }
     });
+    if (!resGet.ok) {
+      return { statusCode: 502, body: JSON.stringify({ message: 'Error al obtener recuerdos' }) };
+    }
     const data = await resGet.json();
-    const actualizado = [...data.record, recuerdoFinal];
+    if (!Array.isArray(data.record)) {
+      console.warn('crearNuevoRecuerdo → WARNING: JSONBin returned data.record that is not an array:', data.record);
+    }
+    const records = Array.isArray(data.record) ? data.record : [];
+    console.log('crearNuevoRecuerdo → existing records count:', records.length);
+    const actualizado = [...records, recuerdoFinal];
 
     const resPatch = await fetch(BASE_URL, {
         method: 'PUT',
@@ -142,7 +162,23 @@ export const handler = async function(event, context) {
         body: JSON.stringify(actualizado)
     });
 
-    const result = await resPatch.json();
+    const resultText = await resPatch.text();
+    console.log('crearNuevoRecuerdo → PUT status:', resPatch.status, 'response:', resultText.slice(0, 500));
+
+    if (!resPatch.ok) {
+      return {
+        statusCode: 502,
+        body: JSON.stringify({ message: 'Error al guardar en JSONBin', detail: resultText })
+      };
+    }
+
+    let result;
+    try {
+      result = resultText ? JSON.parse(resultText) : { message: 'OK' };
+    } catch (parseError) {
+      console.warn('crearNuevoRecuerdo → no se pudo parsear response JSON:', parseError.message);
+      result = { message: 'OK', raw: resultText };
+    }
 
     return {
         statusCode: 200,

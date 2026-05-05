@@ -85,6 +85,9 @@ export const handler = async function(event) {
   if (!OPENAI_API_KEY) {
     return { statusCode: 500, body: JSON.stringify({ message: 'OPENAI_API_KEY no configurada' }) };
   }
+  if (!VITE_BIN_ID || !VITE_MASTER_KEY) {
+    return { statusCode: 500, body: JSON.stringify({ message: 'Variables de JSONBin no configuradas' }) };
+  }
 
   const BASE_URL = `https://api.jsonbin.io/v3/b/${VITE_BIN_ID}`;
 

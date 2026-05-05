@@ -14,7 +14,8 @@
   port = 8888
   autoLaunch = false
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+[context.production]
+  [[redirects]]
+    from = "/*"
+    to = "/index.html"
+    status = 200

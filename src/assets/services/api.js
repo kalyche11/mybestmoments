@@ -36,7 +36,8 @@ export function searchFilter(recuerdos, input) {
   return recuerdos.filter(
     (item) =>
       item.location.toLowerCase().includes(term) ||
-      item.tags.some((tag) => tag.toLowerCase().includes(term))
+      item.tags.some((tag) => tag.toLowerCase().includes(term)) ||
+      (item.image_tags || []).some((tag) => tag.toLowerCase().includes(term))
   );
 }
 

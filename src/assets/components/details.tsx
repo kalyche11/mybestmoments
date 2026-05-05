@@ -63,7 +63,8 @@ export default function Details({ recuerdo, closeDetailGrid }) {
               <p className="details-description" style={{ textAlign: 'justify' }}>{description}</p>
               <h3 className="details-location">{location}</h3>
               <h3 className="tag">{tags?.join(", ")}</h3>
-              <h3 className='date'>{date}</h3>
+              
+              <h3 className='tag'>{date}</h3>
            
             </div>
 

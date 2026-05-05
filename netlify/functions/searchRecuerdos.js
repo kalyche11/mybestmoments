@@ -8,6 +8,7 @@
 // Variables de entorno: OPENAI_API_KEY, VITE_BIN_ID, VITE_MASTER_KEY
 
 import OpenAI from 'openai';
+import { searchEmbeddingsInSupabase } from './supabaseClient.js';
 
 // Cache en memoria: Map<recordId (string), embedding (number[])>
 // Persiste entre invocaciones calientes de la función (warm instances).
@@ -74,7 +75,7 @@ const textFallbackSearch = (records, query) => {
   const words = query
     .toLowerCase()
     .split(/[^a-záéíóúñ0-9]+/)
-    .filter(w => w.length > 2);
+    .filter(w => w.length > 3);
 
   return records
     .map(rec => {
@@ -84,7 +85,7 @@ const textFallbackSearch = (records, query) => {
         const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const matches = haystack.match(new RegExp(escaped, 'g'));
         if (matches) score += matches.length;
-        if (rec.title && rec.title.toLowerCase().includes(w)) score += 2; // Bonus si la palabra está en el título
+        if (rec.title && rec.title.includes(w)) score += 2; // Bonus si la palabra está en el título
       });
       return { ...rec, score };
     })
@@ -137,55 +138,38 @@ export const handler = async function (event) {
       };
     }
 
-    // ── Paso 2: Generar embeddings faltantes (N llamadas solo si es necesario)
-    // Se prioriza: embedding ya guardado en el record > cache en memoria > nueva llamada.
-    const embeddingPromises = records.map(async (rec) => {
-      const id = String(rec.id);
-
-      if (Array.isArray(rec.embedding) && rec.embedding.length > 0) {
-        // El record ya trae embedding persistido: cachearlo para llamadas futuras.
-        if (!embeddingCache.has(id)) embeddingCache.set(id, rec.embedding);
-        return rec.embedding;
-      }
-
-      if (embeddingCache.has(id)) {
-        // Hit en cache de memoria (warm instance).
-        return embeddingCache.get(id);
-      }
-
-      // Sin embedding: generarlo y cachearlo.
-      const recText = preprocessRecord(rec);
-      const emb = await createEmbedding(recText, OPENAI_API_KEY);
-      if (emb) embeddingCache.set(id, emb);
-      return emb;
-    });
-
-    const embeddings = await Promise.all(embeddingPromises);
-
-    // ── Paso 3: Calcular similitud coseno y construir resultados ────────────
-    // text-embedding-3-small produce similitudes típicamente entre 0.25–0.55
-    // para contenido semánticamente relacionado. Umbrales calibrados para este modelo.
-    const THRESHOLD_HIGH   = 0.40; // Alta relevancia
-    const THRESHOLD_MEDIUM = 0.25; // Relevancia media (fallback)
-
-    const scored = records.map((rec, i) => ({
-      ...rec,
-      score: cosineSimilarity(queryEmbedding, embeddings[i]),
-    }));
-
-    scored.sort((a, b) => b.score - a.score);
-
-    // Intentar con umbral alto; si no hay resultados, bajar al medio.
-    let results = scored.filter(r => r.score >= THRESHOLD_HIGH).slice(0, 5);
-    if (results.length === 0) {
-      results = scored.filter(r => r.score >= THRESHOLD_MEDIUM).slice(0, 5);
+    // ── Paso 2: Buscar en Supabase por embedding ────────────────────────────
+    let similarRows = [];
+    try {
+      similarRows = await searchEmbeddingsInSupabase(queryEmbedding, 0.25, 5);
+    } catch (err) {
+      console.error('[search] Error en búsqueda vectorial Supabase:', err.message);
     }
 
-    console.log(`[search] Query: "${text}" | Resultados: ${results.length} | Top score: ${scored[0]?.score?.toFixed(3)}`);
+    if (Array.isArray(similarRows) && similarRows.length > 0) {
+      const ids = similarRows.map(r => String(r.memory_id));
+      const results = records
+        .filter(rec => ids.includes(String(rec.id)))
+        .map(rec => {
+          const row = similarRows.find(r => String(r.memory_id) === String(rec.id));
+          return {
+            ...rec,
+            score: row?.similarity ?? 0,
+          };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5);
 
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ results }),
+      };
+    }
+
+    console.warn('[search] No hubo resultados vectoriales en Supabase, usando búsqueda por texto.');
     return {
       statusCode: 200,
-      body: JSON.stringify({ results }),
+      body: JSON.stringify({ results: textFallbackSearch(records, text) }),
     };
 
   } catch (error) {

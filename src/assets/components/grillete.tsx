@@ -107,6 +107,7 @@ import Footer from './Footer';
       (item) =>
         item.location.toLowerCase().includes(term) ||
         (item.tags && item.tags.some((tag: string) => tag.toLowerCase().includes(term))) ||
+        (item.image_tags && item.image_tags.some((tag: string) => tag.toLowerCase().includes(term))) ||
         item.title.toLowerCase().includes(term) ||
         (item.description && item.description.toLowerCase().includes(term)) ||
         (item.image_description && item.image_description.toLowerCase().includes(term))
@@ -128,8 +129,24 @@ import Footer from './Footer';
 
 
   const toggleFavorite = async (id: string | number) => {
-    await updateFavorite(id);
-    setUpdate((prev) => !prev);
+    // Optimistic update: toggle favorite locally first
+    setAllRecuerdos((prevRecuerdos) =>
+      prevRecuerdos.map((recuerdo) =>
+        recuerdo.id === id ? { ...recuerdo, favorite: !recuerdo.favorite } : recuerdo
+      )
+    );
+
+    try {
+      await updateFavorite(id);
+    } catch (error) {
+      // Revert on error
+      setAllRecuerdos((prevRecuerdos) =>
+        prevRecuerdos.map((recuerdo) =>
+          recuerdo.id === id ? { ...recuerdo, favorite: !recuerdo.favorite } : recuerdo
+        )
+      );
+      console.error('Error updating favorite:', error);
+    }
   };
 
   const handleClick = (recuerdo: any) => {

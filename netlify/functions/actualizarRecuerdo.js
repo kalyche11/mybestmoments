@@ -1,3 +1,4 @@
+import { saveEmbeddingToSupabase } from './supabaseClient.js';
 
 // Extrae el primer bloque JSON de un string (maneja markdown ```json ... ```)
 const extractJSON = (text) => {
@@ -108,10 +109,14 @@ export const handler = async function(event) {
     const resGet = await fetch(`${BASE_URL}/latest`, {
         headers: { "X-Master-Key": VITE_MASTER_KEY }
     });
+    if (!resGet.ok) {
+      return { statusCode: 502, body: JSON.stringify({ message: 'Error al obtener recuerdos' }) };
+    }
     const data = await resGet.json();
+    const records = Array.isArray(data.record) ? data.record : [];
 
     // Re-analizar imágenes si: cambiaron O si faltan image_tags / image_description
-    const existing = data.record.find(item => item.id === id);
+    const existing = records.find(item => String(item.id) === String(id));
     const newImages = Array.isArray(recuerdo.images) ? recuerdo.images : [];
     const oldImages = existing && Array.isArray(existing.images) ? existing.images : [];
     const imagesChanged = JSON.stringify(newImages) !== JSON.stringify(oldImages);
@@ -145,18 +150,25 @@ export const handler = async function(event) {
       const embeddingText = preprocessRecord(mergedForEmbedding);
       updatedEmbedding = await createEmbedding(embeddingText, OPENAI_API_KEY);
       console.log('[actualizarRecuerdo] Embedding recalculado:', !!updatedEmbedding);
-      // Si OpenAI falla, updatedEmbedding queda null → se conserva el embedding anterior.
+      if (updatedEmbedding) {
+        try {
+          await saveEmbeddingToSupabase(id, updatedEmbedding);
+          console.log('[actualizarRecuerdo] Embedding guardado en Supabase para memory_id:', id);
+        } catch (err) {
+          console.error('[actualizarRecuerdo] falló guardar embedding en Supabase:', err.message);
+        }
+      }
+      // No guardamos el vector embedding en JSONBin para mantener el documento pequeño.
     }
 
-    const actualizado = data.record.map((item) => {
-      if (item.id !== id) return item;
+    const actualizado = records.map((item) => {
+      if (String(item.id) !== String(id)) return item;
       const merged = { ...item, ...recuerdo };
       if (updatedVisionData !== undefined) {
         merged.image_tags        = updatedVisionData.image_tags;
         merged.image_description = updatedVisionData.image_description;
       }
-      // Solo sobrescribir embedding si se generó uno nuevo válido.
-      if (updatedEmbedding) merged.embedding = updatedEmbedding;
+      delete merged.embedding;
       return merged;
     });
 

@@ -1,4 +1,4 @@
-
+import { deleteEmbeddingFromSupabase } from './supabaseClient.js';
 
 export const handler = async function(event, context) {
   if (event.httpMethod !== 'DELETE') {
@@ -26,6 +26,15 @@ export const handler = async function(event, context) {
     });
 
     if(resPut.ok){
+        try {
+          await deleteEmbeddingFromSupabase(id);
+        } catch (err) {
+          console.error('deleteMemory → falló borrar embedding en Supabase:', err.message);
+          return {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Memory eliminada en JSONBin pero falló eliminar embedding en Supabase' })
+          };
+        }
         return {
             statusCode: 200,
             body: JSON.stringify({ message: "Memory deleted" })

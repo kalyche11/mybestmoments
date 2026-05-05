@@ -12,6 +12,8 @@
 // Variables de entorno requeridas: OPENAI_API_KEY, VITE_BIN_ID, VITE_MASTER_KEY
 // Variable opcional:               BACKFILL_SECRET
 
+import { saveEmbeddingToSupabase, embeddingExistsInSupabase } from './supabaseClient.js';
+
 // ── Preprocesa un record para construir el texto que se embebe ───────────────
 // Combina los campos más representativos y normaliza para consistencia.
 const preprocessRecord = (r) => {
@@ -100,64 +102,43 @@ export const handler = async function (event) {
   let procesados = 0;
   let omitidos   = 0;
   let errores    = 0;
-  let huboCambios = false;
 
-  const actualizados = await Promise.all(
-    records.map(async (rec) => {
-      // Ya tiene embedding válido → omitir
-      if (Array.isArray(rec.embedding) && rec.embedding.length > 0) {
-        omitidos++;
-        return rec;
-      }
-
-      const text = preprocessRecord(rec);
-      if (!text) {
-        // Record sin campos de texto → saltar sin error
-        console.warn(`[backfill] Record ${rec.id} sin texto útil, omitido.`);
-        omitidos++;
-        return rec;
-      }
-
-      const embedding = await createEmbedding(text, OPENAI_API_KEY);
-      if (!embedding) {
-        // OpenAI falló para este record → dejarlo sin embedding, continuar
-        console.error(`[backfill] Falló embedding para record ${rec.id}`);
-        errores++;
-        return rec;
-      }
-
-      procesados++;
-      huboCambios = true;
-      console.log(`[backfill] ✓ Embedding generado para record ${rec.id}`);
-      return { ...rec, embedding };
-    })
-  );
-
-  // ── Persistir solo si hubo al menos un cambio ────────────────────────────────
-  if (huboCambios) {
+  for (const rec of records) {
+    let exists;
     try {
-      const resPut = await fetch(BASE_URL, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': VITE_MASTER_KEY,
-        },
-        body: JSON.stringify(actualizados),
-      });
-      if (!resPut.ok) {
-        const errText = await resPut.text();
-        console.error('[backfill] Error guardando en JSONBin:', errText);
-        return {
-          statusCode: 502,
-          body: JSON.stringify({
-            message: 'Embeddings generados pero falló al persistir en JSONBin',
-            procesados, omitidos, errores,
-          }),
-        };
-      }
-    } catch (e) {
-      console.error('[backfill] Error en PUT JSONBin:', e.message);
-      return { statusCode: 500, body: JSON.stringify({ message: 'Error interno al guardar', procesados, omitidos, errores }) };
+      exists = await embeddingExistsInSupabase(rec.id);
+    } catch (err) {
+      console.error('[backfill] Error verificando embedding en Supabase para record', rec.id, err.message);
+      errores++;
+      continue;
+    }
+
+    if (exists) {
+      omitidos++;
+      continue;
+    }
+
+    const text = preprocessRecord(rec);
+    if (!text) {
+      console.warn(`[backfill] Record ${rec.id} sin texto útil, omitido.`);
+      omitidos++;
+      continue;
+    }
+
+    const embedding = await createEmbedding(text, OPENAI_API_KEY);
+    if (!embedding) {
+      console.error(`[backfill] Falló embedding para record ${rec.id}`);
+      errores++;
+      continue;
+    }
+
+    try {
+      await saveEmbeddingToSupabase(rec.id, embedding);
+      procesados++;
+      console.log(`[backfill] ✓ Embedding guardado en Supabase para record ${rec.id}`);
+    } catch (err) {
+      console.error('[backfill] Error guardando embedding en Supabase:', err.message);
+      errores++;
     }
   }
 
@@ -165,7 +146,7 @@ export const handler = async function (event) {
   return {
     statusCode: 200,
     body: JSON.stringify({
-      message: huboCambios ? 'Backfill completado' : 'Todos los recuerdos ya tenían embedding',
+      message: 'Backfill de embeddings completado',
       procesados,
       omitidos,
       errores,
