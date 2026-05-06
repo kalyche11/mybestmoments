@@ -2,7 +2,6 @@ import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Footer from './Footer';
 
 export default function Login() {
     const navigate = useNavigate();
@@ -149,7 +148,6 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
                     </form>
                 </Paper>
             </motion.div>
-            <Footer />
         </Box>
     );
 }

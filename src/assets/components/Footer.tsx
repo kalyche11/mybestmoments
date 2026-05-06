@@ -4,7 +4,7 @@ import '../styles/Footer.css';
 const Footer: React.FC = () => {
   return (
     <footer className="footer">
-      <p className="footer-text">com carinho, risada e muito axé. 💛🇧🇷✨🔥</p>
+      <p className="footer-text">om carinho, risada e muito axé. 💛🇧🇷✨🔥</p>
     </footer>
   );
 };

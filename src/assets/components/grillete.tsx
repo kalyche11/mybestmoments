@@ -12,7 +12,6 @@ import Edit from './edit';
 import Details from './details';
 import { getRecuerdos, updateFavorite, backfillImageTags } from '../services/api.js';
 import { Navigate,useNavigate } from 'react-router-dom';
-import Footer from './Footer';
 
 const sortRecuerdosByFavorite = (recuerdos: any[]) =>
   [...recuerdos].sort((a, b) => Number(b.favorite) - Number(a.favorite));
@@ -336,7 +335,6 @@ const toggleFavoriteInList = (recuerdos: any[], id: string | number) =>
         </motion.div>
       </Box>
       {showLoader && <Loader setPageNumber={handleLoadMore} />}
-      <Footer />
     </Box>
     </>
   );

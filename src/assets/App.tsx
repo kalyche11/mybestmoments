@@ -1,6 +1,7 @@
 import Home from '../assets/components/Home';
 import Login from '../assets/components/Login';
 import Grilla from './components/grillete'; 
+import Footer from './components/Footer';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './styles/app.css'
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
                     </Routes>
                 </BrowserRouter>
             </div>
+            <Footer />
         </div>
     );
 }
