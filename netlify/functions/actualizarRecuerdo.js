@@ -1,4 +1,4 @@
-import { saveEmbeddingToSupabase } from './supabaseClient.js';
+import { saveEmbeddingToSupabase, embeddingExistsInSupabase } from './supabaseClient.js';
 
 // Extrae el primer bloque JSON de un string (maneja markdown ```json ... ```)
 const extractJSON = (text) => {
@@ -120,27 +120,51 @@ export const handler = async function(event) {
     const newImages = Array.isArray(recuerdo.images) ? recuerdo.images : [];
     const oldImages = existing && Array.isArray(existing.images) ? existing.images : [];
     const imagesChanged = JSON.stringify(newImages) !== JSON.stringify(oldImages);
-    const urlChanged = (recuerdo.url || '') !== (existing?.url || '');
+    const urlChanged = (recuerdo.url ?? '') !== (existing?.url ?? '');
     const missingVisionData = !existing?.image_tags || existing.image_tags.length === 0 || !existing?.image_description;
-    const allImages = [recuerdo.url || existing?.url, ...newImages].filter(Boolean);
+    const allImages = [recuerdo.url ?? existing?.url, ...newImages].filter(Boolean);
     let updatedVisionData;
+    let visionAttempted = false;
+    let visionSucceeded = false;
     if (allImages.length > 0 && (imagesChanged || urlChanged || missingVisionData)) {
       const meta = { title: recuerdo.title ?? existing?.title, description: recuerdo.description ?? existing?.description, location: recuerdo.location ?? existing?.location, tags: recuerdo.tags ?? existing?.tags };
-      updatedVisionData = await analyzeImages(allImages, meta, OPENAI_API_KEY);
+      visionAttempted = true;
+      const visionResult = await analyzeImages(allImages, meta, OPENAI_API_KEY);
+      if (visionResult.image_tags.length > 0 || visionResult.image_description) {
+        updatedVisionData = visionResult;
+        visionSucceeded = true;
+      } else {
+        console.warn('[actualizarRecuerdo] Vision no devolvio etiquetas utiles; se conservan las anteriores.');
+      }
     }
 
     // ── Recalcular embedding si cambiaron campos semánticos ───────────────────
     // Se dispara si: faltan campos de texto, cambió algún campo semántico,
     // o se acaban de regenerar image_tags/image_description.
-    const missingEmbedding = !existing?.embedding || !Array.isArray(existing.embedding) || existing.embedding.length === 0;
+    let missingEmbedding = false;
+    try {
+      missingEmbedding = !(await embeddingExistsInSupabase(id));
+    } catch (err) {
+      console.error('[actualizarRecuerdo] fallo verificar embedding en Supabase:', err.message);
+    }
     const textFieldsChanged =
       (recuerdo.title       !== undefined && recuerdo.title       !== existing?.title)       ||
       (recuerdo.description !== undefined && recuerdo.description !== existing?.description) ||
       (recuerdo.location    !== undefined && recuerdo.location    !== existing?.location)    ||
       JSON.stringify(recuerdo.tags ?? existing?.tags ?? []) !== JSON.stringify(existing?.tags ?? []);
 
+    const shouldRecalculateEmbedding =
+      missingEmbedding ||
+      textFieldsChanged ||
+      updatedVisionData !== undefined;
+    const canRecalculateEmbedding =
+      !visionAttempted ||
+      visionSucceeded ||
+      textFieldsChanged ||
+      missingEmbedding;
+
     let updatedEmbedding;
-    if (missingEmbedding || textFieldsChanged || updatedVisionData !== undefined) {
+    if (shouldRecalculateEmbedding && canRecalculateEmbedding) {
       // Fusionar campos para tener el texto más actualizado posible antes de embeber.
       const mergedForEmbedding = { ...existing, ...recuerdo };
       if (updatedVisionData !== undefined) {
@@ -159,6 +183,8 @@ export const handler = async function(event) {
         }
       }
       // No guardamos el vector embedding en JSONBin para mantener el documento pequeño.
+    } else if (shouldRecalculateEmbedding) {
+      console.warn('[actualizarRecuerdo] Embedding no recalculado: solo cambiaron imagenes y Vision fallo.');
     }
 
     const actualizado = records.map((item) => {

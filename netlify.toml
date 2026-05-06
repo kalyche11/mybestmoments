@@ -1,4 +1,6 @@
 [build]
+  command = "npm run build"
+  publish = "dist"
   functions = "netlify/functions"
 
 [functions]
@@ -9,13 +11,8 @@
   timeout = 300
 
 [dev]
-  command = "npm run dev"
+  framework = "#custom"
+  command = "npm run dev -- --host 127.0.0.1"
   targetPort = 5173
   port = 8888
   autoLaunch = false
-
-[context.production]
-  [[redirects]]
-    from = "/*"
-    to = "/index.html"
-    status = 200

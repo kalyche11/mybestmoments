@@ -14,12 +14,21 @@ import { getRecuerdos, updateFavorite, backfillImageTags } from '../services/api
 import { Navigate,useNavigate } from 'react-router-dom';
 import Footer from './Footer';
 
+const sortRecuerdosByFavorite = (recuerdos: any[]) =>
+  [...recuerdos].sort((a, b) => Number(b.favorite) - Number(a.favorite));
+
+const toggleFavoriteInList = (recuerdos: any[], id: string | number) =>
+  sortRecuerdosByFavorite(
+    recuerdos.map((recuerdo) =>
+      recuerdo.id === id ? { ...recuerdo, favorite: !recuerdo.favorite } : recuerdo
+    )
+  );
+
   export default function Grilla() {
   const navigate = useNavigate();
   const [valid, setValid] = useState<boolean | null>(null);
   const username = localStorage.getItem("username") || "";
 
-  const [RECUERDOS, setRecuerdos] = useState<any[]>([]);
   const [ALL_RECUERDOS, setAllRecuerdos] = useState<any[]>([]);
   const [originalRecuerdos, setOriginalRecuerdos] = useState<any[]>([]);
   const [filteredActive, setFilteredActive] = useState(false);
@@ -30,7 +39,6 @@ import Footer from './Footer';
   const [update, setUpdate] = useState(false);
   const [PageNumber, setPageNumber] = useState(1);
   const [actualizando, setactualizando] = useState(false);
-  const [showLoadder, setShowLoader] = useState(false); // Changed initial state
   const [searchTerm, setSearchTerm] = useState(''); // New state
   const [backfilling, setBackfilling] = useState(false);
   const [backfillMsg, setBackfillMsg] = useState('');
@@ -41,10 +49,11 @@ import Footer from './Footer';
     setBackfillMsg('');
     try {
       const res = await backfillImageTags();
-      if (res.updated === 0) {
-        setBackfillMsg('✓ Todos los recuerdos ya tienen etiquetas');
+      const totalChanges = (res.updated || 0) + (res.embeddingsCreated || 0);
+      if (totalChanges === 0) {
+        setBackfillMsg('✓ Todo ya estaba analizado');
       } else {
-        setBackfillMsg(`✓ ${res.updated} recuerdo(s) actualizados`);
+        setBackfillMsg(`✓ ${res.updated || 0} etiqueta(s), ${res.embeddingsCreated || 0} embedding(s)`);
         setUpdate(prev => !prev); // recargar recuerdos
       }
     } catch {
@@ -91,7 +100,7 @@ import Footer from './Footer';
   useEffect(() => {
     const fetchRecuerdos = async () => {
       setactualizando(true);
-      const recuerdos = await getRecuerdos();
+      const recuerdos = sortRecuerdosByFavorite(await getRecuerdos());
       setAllRecuerdos(recuerdos);
       setOriginalRecuerdos(recuerdos);
       setactualizando(false);
@@ -114,14 +123,12 @@ import Footer from './Footer';
     );
   }, [ALL_RECUERDOS, searchTerm]);
 
-  useEffect(() => {
-    setRecuerdos(filteredRecuerdos.slice(0, PageNumber * 4));
-    if (PageNumber * 4 < filteredRecuerdos.length) {
-      setShowLoader(true);
-    } else {
-      setShowLoader(false);
-    }
-  }, [PageNumber, filteredRecuerdos]);
+  const visibleRecuerdos = useMemo(
+    () => filteredRecuerdos.slice(0, PageNumber * 4),
+    [filteredRecuerdos, PageNumber]
+  );
+
+  const showLoader = PageNumber * 4 < filteredRecuerdos.length;
 
   useEffect(() => {
     setPageNumber(1);
@@ -129,21 +136,23 @@ import Footer from './Footer';
 
 
   const toggleFavorite = async (id: string | number) => {
-    // Optimistic update: toggle favorite locally first
-    setAllRecuerdos((prevRecuerdos) =>
-      prevRecuerdos.map((recuerdo) =>
-        recuerdo.id === id ? { ...recuerdo, favorite: !recuerdo.favorite } : recuerdo
-      )
+    setAllRecuerdos((prevRecuerdos) => toggleFavoriteInList(prevRecuerdos, id));
+    setOriginalRecuerdos((prevRecuerdos) => toggleFavoriteInList(prevRecuerdos, id));
+    setSelectedRecuerdo((prevRecuerdo: any) =>
+      prevRecuerdo?.id === id
+        ? { ...prevRecuerdo, favorite: !prevRecuerdo.favorite }
+        : prevRecuerdo
     );
 
     try {
       await updateFavorite(id);
     } catch (error) {
-      // Revert on error
-      setAllRecuerdos((prevRecuerdos) =>
-        prevRecuerdos.map((recuerdo) =>
-          recuerdo.id === id ? { ...recuerdo, favorite: !recuerdo.favorite } : recuerdo
-        )
+      setAllRecuerdos((prevRecuerdos) => toggleFavoriteInList(prevRecuerdos, id));
+      setOriginalRecuerdos((prevRecuerdos) => toggleFavoriteInList(prevRecuerdos, id));
+      setSelectedRecuerdo((prevRecuerdo: any) =>
+        prevRecuerdo?.id === id
+          ? { ...prevRecuerdo, favorite: !prevRecuerdo.favorite }
+          : prevRecuerdo
       );
       console.error('Error updating favorite:', error);
     }
@@ -193,7 +202,7 @@ import Footer from './Footer';
                 Ferramentas
               </button>
               <div className={`tools-panel${toolsOpen ? ' open' : ''}`}>
-                {RECUERDOS.length > 0 && (
+                {visibleRecuerdos.length > 0 && (
                   <button className="tools-item" onClick={() => { setShowNewMemory(true); setToolsOpen(false); }}>
                     <span className="tools-item-icon">✨</span>
                     <span className="tools-item-label">Nuevo recuerdo</span>
@@ -228,7 +237,7 @@ import Footer from './Footer';
           </Box>
         </Box>
 
-        {!actualizando && RECUERDOS.length === 0 && (
+        {!actualizando && visibleRecuerdos.length === 0 && (
           <Typography className="error" variant="h5">
             😕 NO SE ENCONTRARON RESULTADOS 😕
           </Typography>
@@ -258,12 +267,20 @@ import Footer from './Footer';
         )}
 
         <motion.div variants={containerVariants} initial="hidden" animate="show" className='grillaContainer'>
-          {RECUERDOS.map((recuerdo: any) => (
+          {visibleRecuerdos.map((recuerdo: any) => (
             <div key={recuerdo.id}>
               <motion.div className="card-motion-wrapper" variants={itemVariants} whileHover="hover">
                 <Paper className="card-glass">
                   <Box className="card-image-container">
-                    <img src={recuerdo.url} alt={recuerdo.title} className="card-image" loading="lazy" />
+                    <img
+                      src={recuerdo.url}
+                      alt={recuerdo.title}
+                      className="card-image"
+                      loading="lazy"
+                      decoding="async"
+                      width={320}
+                      height={140}
+                    />
                     <Box className="card-image-overlay" />
                     <Box className="card-image-content">
                       <Typography variant="subtitle1" className="card-title">
@@ -318,7 +335,7 @@ import Footer from './Footer';
           ))}
         </motion.div>
       </Box>
-      {showLoadder && <Loader setPageNumber={handleLoadMore} />}
+      {showLoader && <Loader setPageNumber={handleLoadMore} />}
       <Footer />
     </Box>
     </>

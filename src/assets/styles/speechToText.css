@@ -139,12 +139,36 @@
 .stt-action {
   background: linear-gradient(90deg,#6ee7b7,#34d399);
   color: #062b1f;
-  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  min-height: 44px;
+  padding: 10px 14px;
   border-radius: 12px;
   border: 2px solid rgba(52,211,153,0.12);
   cursor: pointer;
   font-weight: 700;
-  min-width: 120px;
+  font-size: 14px;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stt-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.stt-controls .stt-action.new-memory-button {
+  width: 150px !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 44px !important;
+  margin: 0 !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  justify-content: center;
 }
 
 /* Botón de búsqueda: destacado con borde llamativo */
@@ -152,10 +176,6 @@
   background: linear-gradient(90deg,#ff8a00,#e52e71);
   color: #fff;
   border: 2px solid rgba(229,46,113,0.18);
-  padding: 10px 16px;
-  border-radius: 12px;
-  font-weight: 700;
-  min-width: 140px;
 }
 
 /* Botón limpiar: minimalista oscuro con borde y texto blanco */
@@ -163,9 +183,6 @@
   background: #0f1113;
   color: #ffffff;
   border: 2px solid rgba(255,255,255,0.06);
-  padding: 10px 14px;
-  border-radius: 12px;
-  min-width: 110px;
 }
 
 /* Loader */
@@ -184,7 +201,17 @@
 }
 
 @media (max-width: 480px) {
-  .stt-action, .stt-find, .stt-secondary { min-width: 100px; padding: 8px 10px; }
+  .stt-action, .stt-find, .stt-secondary {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 10px;
+  }
+
+  .stt-controls .stt-action.new-memory-button {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 42px !important;
+  }
 }
 
 /* small responsive tweaks */

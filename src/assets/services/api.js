@@ -49,8 +49,8 @@ export const updateFavorite = async (id) => {
   return res.ok;
 };
 
-// Migración única: rellena image_tags en todos los recuerdos que no los tengan.
-// Llamar desde la consola del navegador o desde un botón de admin:
+// Mantenimiento: rellena image_tags/image_description en JSONBin y embeddings en Supabase.
+// Llamar desde la consola del navegador o desde un boton de admin:
 //   import { backfillImageTags } from './services/api'; backfillImageTags();
 export const backfillImageTags = async () => {
   const res = await fetch("/.netlify/functions/backfillImageTags", {

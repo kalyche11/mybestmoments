@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "functions": "netlify functions:serve --port 9999",
-    "netlify:dev": "netlify dev",
-    "build": "vite build",
+    "netlify:dev": "netlify dev --offline --framework \"#custom\" --command \"npm run dev -- --host 127.0.0.1\" --target-port 5173 --port 8888 --no-open",
+    "build": "vite build && node scripts/write-redirects.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

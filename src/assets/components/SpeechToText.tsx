@@ -59,6 +59,7 @@ const SpeechToText: React.FC<Props> = ({ setAllRecuerdos, setFilteredActive }) =
   }, []);
 
   const startRecognition = () => {
+    if (searching) return;
     const recognition = recognitionRef.current;
     if (!recognition) {
       setMessage('SpeechRecognition no está disponible en este navegador. Prueba Chrome o Edge moderno.');
@@ -104,6 +105,7 @@ const SpeechToText: React.FC<Props> = ({ setAllRecuerdos, setFilteredActive }) =
     // Enviar transcript al endpoint serverless que usa OpenAI y filtra recuerdos
     (async () => {
       try {
+        stopRecognition();
         setSearching(true);
         const res = await fetch('/.netlify/functions/searchRecuerdos', {
           method: 'POST',
@@ -179,10 +181,10 @@ const SpeechToText: React.FC<Props> = ({ setAllRecuerdos, setFilteredActive }) =
               </div>
             ) : (
               <div className="stt-controls">
-                <button className="stt-action new-memory-button" onClick={() => (listening ? stopRecognition() : startRecognition())}>
+                <button className="stt-action new-memory-button" onClick={() => (listening ? stopRecognition() : startRecognition())} disabled={searching}>
                   {listening ? 'Detener' : 'Reanudar'}
                 </button>
-                <button className="stt-action stt-find" onClick={findInTranscript}>Buscar recuerdo</button>
+                <button className="stt-action stt-find" onClick={findInTranscript}>Buscar recuerdos</button>
                 <button className="stt-action stt-secondary" onClick={clear}>Limpiar texto</button>
               </div>
             )}

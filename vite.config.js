@@ -13,8 +13,7 @@ export default defineConfig({
     proxy: {
       '/.netlify/functions': {
         target: 'http://localhost:9999',
-        changeOrigin: true,
-        rewrite: (path) => path.replace('/.netlify/functions', '')
+        changeOrigin: true
       }
     }
   }
