@@ -3,12 +3,26 @@ import Paper from '@mui/material/Paper';
 import { Button, IconButton, Zoom } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 export default function Details({ recuerdo, closeDetailGrid }) {
   const { id, url, title, description, location, tags, images = [], date } = recuerdo;
 
   const allImages = useMemo(() => [url, ...images].filter(Boolean), [url, images]);
+
+  useEffect(() => {
+    const preloadedImages = allImages.map((src) => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
+
+    return () => {
+      preloadedImages.forEach((img) => {
+        img.src = '';
+      });
+    };
+  }, [allImages]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentImage = allImages[currentIndex];
